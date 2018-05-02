@@ -46,16 +46,8 @@ class GuiceModule(environment: Environment, configuration: Configuration) extend
 
     bindConfigInt("controllers.confidenceLevel")
     bindConfigString("appUrl", "appUrl")
-    bindConfigBoolean("submission.submissionShuttered", "microservice.services.ntc.submission.submissionShuttered")
-    bindConfigString("submission.startDate", "microservice.services.ntc.submission.startDate")
-    bindConfigString("submission.endDate", "microservice.services.ntc.submission.endDate")
-    bindConfigString("submission.endViewRenewalsDate", "microservice.services.ntc.submission.endViewRenewalsDate")
-    bind(classOf[LoggerLike]).toInstance(Logger)
 
-    bind(classOf[String]).annotatedWith(named("tai")).toInstance(baseUrl("tai"))
-    bind(classOf[String]).annotatedWith(named("ntc")).toInstance(baseUrl("ntc"))
     bind(classOf[String]).annotatedWith(named("tax-credits-broker")).toInstance(baseUrl("tax-credits-broker"))
-    bind(classOf[String]).annotatedWith(named("personal-tax-summary")).toInstance(baseUrl("personal-tax-summary"))
   }
 
   @Provides
@@ -75,8 +67,4 @@ class GuiceModule(environment: Environment, configuration: Configuration) extend
     bindConstant().annotatedWith(named(name))
       .to(configuration.underlying.getString(path))
   }
-
-  private def bindConfigBoolean(name: String, path: String): Unit =
-    bindConstant().annotatedWith(named(name)).to(configuration.underlying.getBoolean(path))
-
 }
