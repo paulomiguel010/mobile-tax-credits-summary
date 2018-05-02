@@ -1,6 +1,6 @@
 The Tax Credits Summary object
 ----
-  Fetch the Tax Credits Summary object for a given nino.
+  Fetch the Tax Credits renewal status.
   
 * **URL**
 

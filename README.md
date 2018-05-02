@@ -1,9 +1,9 @@
 mobile-tax-credits-summary
 =============================================
 
-[![Build Status](https://travis-ci.org/hmrc/mobile-tax-credits-summary.svg?branch=master)](https://travis-ci.org/hmrc/mobile-tax-credits-summary) [ ![Download](https://api.bintray.com/packages/hmrc/releases/mobile-tax-credits-summary/images/download.svg) ](https://bintray.com/hmrc/releases/mobile-tax-credits-summary/_latestVersion)
+[ ![Download](https://api.bintray.com/packages/hmrc/releases/mobile-tax-credits-summary/images/download.svg) ](https://bintray.com/hmrc/releases/mobile-tax-credits-summary/_latestVersion)
 
-Allows users to view their paye tax information and perform a renewal.
+Allows users to view their tax credits information and perform a renewal.
 
 Requirements
 ------------
@@ -17,17 +17,13 @@ API
 
 | *Task* | *Supported Methods* | *Description* |
 |--------|----|----|
-| ```/income/:nino/tax-summary/:taxYear``` | GET | Returns the ```Tax Summary``` for the given nino. [More...](docs/tax-summary.md)  |
-| ```/income/:nino/tax-credits/:renewalReference/auth``` | GET | Validate and retrieve the TCR auth-token assoicated with the NINO and renewal reference. [More...](docs/authenticate.md)|
-| ```/income/:nino/tax-credits/claimant-details``` | GET | Retrieve the claiment-details associated with the nino. Note the header tcrAuthToken must be supplied. [More...](docs/claimentDetails.md) |
-| ```/income/:nino/tax-credits/renewal``` | POST | Post a renewal to the NTC micro-service for off-line processing. Note the header tcrAuthToken must be supplied. [More...](docs/renewal.md)|
 | ```/income/:nino/tax-credits/tax-credits-summary``` | GET | Fetch the Tax Credits Summary object for a given NINO. [More...](docs/tax-credits-summary.md)|
-| ```/income/tax-credits/submission/state/enabled``` | GET | This endpoint retrieves the current state of tax credit submissions. [More...](docs/tax-credits-submission-state-enabled.md)|
+| ```/income/:nino/tax-credits/tax-credits-decision``` | GET | Fetch the Tax Credits renewal status. [More...](docs/tax-credits-decision.md)  |
 
 # Sandbox
 All the above endpoints are accessible on sandbox with `/sandbox` prefix on each endpoint,e.g.
 ```
-    GET /sandbox/income/:nino/tax-summary/:taxYear
+    GET /sandbox/income/:nino/tax-credits/tax-credits-summary
 ```
 
 # Definition
