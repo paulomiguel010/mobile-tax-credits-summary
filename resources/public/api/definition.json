@@ -1,0 +1,22 @@
+{
+  "scopes":[
+    {
+      "key":"read:mobile-tax-credits-summary",
+      "name":"Execute tax-summary call",
+      "description":"Retrieve the tax-summary for a specific NINO and year"
+    }
+  ],
+  "api":{
+    "name":"Mobile Tax Credits Summary",
+    "description":"The API is used to retrieve tax-summary information.",
+    "context":"mobile-tax-credits-summary",
+    "requiresTrust": true,
+    "versions":[
+      {
+        "version":"1.0",
+        "status":"STABLE",
+        "endpointsEnabled": true
+      }
+    ]
+  }
+}

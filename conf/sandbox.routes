@@ -1,0 +1,4 @@
+
+GET         /income/:nino/tax-credits/tax-credits-summary           @uk.gov.hmrc.mobiletaxcreditssummary.controllers.SandboxPersonalIncomeController.taxCreditsSummary(nino: uk.gov.hmrc.domain.Nino, journeyId: Option[String])
+
+GET         /income/:nino/tax-credits/tax-credits-decision          @uk.gov.hmrc.mobiletaxcreditssummary.controllers.SandboxPersonalIncomeController.getTaxCreditExclusion(nino: uk.gov.hmrc.domain.Nino, journeyId: Option[String])
