@@ -16,10 +16,10 @@
 
 package uk.gov.hmrc.mobiletaxcreditssummary.domain.userdata
 
-import play.api.libs.json.Json
+import play.api.libs.json.{Json, OFormat}
 
 case class Address(addressLine1: String, addressLine2: String, addressLine3: Option[String], addressLine4: Option[String], postCode: Option[String])
 
 object Address {
-  implicit val formats = Json.format[Address]
+  implicit val formats: OFormat[Address] = Json.format[Address]
 }

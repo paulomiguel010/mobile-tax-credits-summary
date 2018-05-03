@@ -40,7 +40,6 @@ class TaxCreditBrokerSpec extends UnitSpec with ScalaFutures with WithFakeApplic
   trait Setup extends MockitoSugar {
     implicit lazy val hc: HeaderCarrier = HeaderCarrier()
 
-    val weekly = "WEEKLY"
     val expectedNextDueDate: DateTime = DateTime.parse("2015-07-16")
 
     val expectedPaymentWTC = FuturePayment(160.34, expectedNextDueDate, oneOffPayment = false)
@@ -51,8 +50,6 @@ class TaxCreditBrokerSpec extends UnitSpec with ScalaFutures with WithFakeApplic
 
 
     lazy val http500Response = Future.failed(Upstream5xxResponse("Error", 500, 500))
-    lazy val http400Response = Future.failed(new BadRequestException("bad request"))
-    lazy val http204Response = Future.successful(HttpResponse(204))
     lazy val response: Future[HttpResponse] = http200Person
 
     lazy val http200Person = Future.successful(HttpResponse(200, Some(Json.toJson(personalDetails))))

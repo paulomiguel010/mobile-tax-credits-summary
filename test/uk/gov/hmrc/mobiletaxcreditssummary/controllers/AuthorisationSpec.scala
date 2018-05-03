@@ -27,6 +27,7 @@ class AuthorisationSpec extends TestSetup {
   def authorisation(mockAuthConnector: AuthConnector): Authorisation = {
     new Authorisation {
       override val confLevel: Int = 200
+
       override def authConnector: AuthConnector = mockAuthConnector
     }
   }

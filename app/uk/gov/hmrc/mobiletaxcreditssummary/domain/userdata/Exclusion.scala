@@ -16,12 +16,12 @@
 
 package uk.gov.hmrc.mobiletaxcreditssummary.domain.userdata
 
-import play.api.libs.json.Json
+import play.api.libs.json.{Json, OFormat}
 
 case class Exclusion(excluded: Boolean)
 
 object Exclusion {
   val key = "exclusion"
 
-  implicit val formats = Json.format[Exclusion]
+  implicit val formats: OFormat[Exclusion] = Json.format[Exclusion]
 }

@@ -16,8 +16,8 @@
 
 package uk.gov.hmrc.mobiletaxcreditssummary.domain.userdata
 
-import org.joda.time.{LocalDate, Years, DateTime}
-import play.api.libs.json.Json
+import org.joda.time.{DateTime, LocalDate, Years}
+import play.api.libs.json.{Json, OFormat}
 
 case class Child(firstNames:String,
                  surname:String,
@@ -29,18 +29,18 @@ case class Child(firstNames:String,
 
 
 object Child {
-  implicit val formats = Json.format[Child]
+  implicit val formats: OFormat[Child] = Json.format[Child]
 
-  def getAge(child:Child) = {
+  def getAge(child:Child): Int = {
     val years = Years.yearsBetween(new LocalDate(child.dateOfBirth), new LocalDate())
-    years.getYears();
+    years.getYears
   }
 
   def getEligibleChildren(children: Children): Seq[Child] = {
     children.child.filter { child =>
       getAge(child) < 20 &&
         child.isActive &&
-        !child.dateOfDeath.isDefined
+        child.dateOfDeath.isEmpty
     }
   }
 }

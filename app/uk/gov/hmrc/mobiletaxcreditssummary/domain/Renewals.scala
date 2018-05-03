@@ -16,6 +16,39 @@
 
 package uk.gov.hmrc.mobiletaxcreditssummary.domain
 
+import com.ning.http.util.Base64
+import play.api.libs.json.{Json, OFormat}
+
+import scala.util.Try
+
 case class RenewalReference(value: String) {
   def stripSpaces = RenewalReference(value.replaceAll(" ", ""))
+}
+
+case class TcrAuthenticationToken(tcrAuthToken: String) {
+  def extractNino: Option[String] = extractBasicAuth(tcrAuthToken).map(_._1)
+
+  def extractRenewalReference: Option[String] = extractBasicAuth(tcrAuthToken).map(_._2)
+
+  private def extractBasicAuth(auth: String): Option[(String, String)] = {
+    val BasicAuthPattern = "Basic (.*)".r
+
+    Try {
+      auth match {
+        case BasicAuthPattern(encoded) =>
+          val parts = new String(Base64.decode(encoded)).split(":")
+          (parts(0), parts(1))
+      }
+    }.toOption
+  }
+
+}
+
+object TcrAuthenticationToken {
+  implicit val formats: OFormat[TcrAuthenticationToken] = Json.format[TcrAuthenticationToken]
+
+  def basicAuthString(nino: String, renewalReference: String): String = "Basic " + encodedAuth(nino, renewalReference)
+
+  def encodedAuth(nino: String, renewalReference: String): String = new String(Base64.encode(s"$nino:$renewalReference".getBytes))
+
 }

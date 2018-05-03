@@ -16,28 +16,26 @@
 
 package uk.gov.hmrc.mobiletaxcreditssummary.binders
 
-import uk.gov.hmrc.domain.Nino
 import play.api.mvc.PathBindable
+import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.mobiletaxcreditssummary.domain.RenewalReference
 
 object Binders {
 
-  implicit def ninoBinder(implicit stringBinder: PathBindable[String]) = new PathBindable[Nino] {
+  implicit def ninoBinder(implicit stringBinder: PathBindable[String]): PathBindable[Nino] = new PathBindable[Nino] {
 
     def unbind(key: String, nino: Nino): String = stringBinder.unbind(key, nino.value)
 
     def bind(key: String, value: String): Either[String, Nino] = {
-      Nino.isValid(value) match {
-        case true => Right(Nino(value))
-        case false => Left("ERROR_NINO_INVALID")
-      }
+      if (Nino.isValid(value)) Right(Nino(value))
+      else Left("ERROR_NINO_INVALID")
     }
   }
 
-  implicit def renewalReferenceBinder(implicit stringBinder: PathBindable[String]) = new PathBindable[RenewalReference] {
+  implicit def renewalReferenceBinder(implicit stringBinder: PathBindable[String]): PathBindable[RenewalReference] = new PathBindable[RenewalReference] {
 
     def unbind(key: String, renewalReference: RenewalReference): String = stringBinder.unbind(key, renewalReference.value)
 
-    def bind(key: String, value: String): Either[String, RenewalReference] = { Right(RenewalReference(value)) }
+    def bind(key: String, value: String): Either[String, RenewalReference] = Right(RenewalReference(value))
   }
 }
