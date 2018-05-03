@@ -23,9 +23,6 @@ import play.api.Application
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.ws.WSClient
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.mobiletaxcreditssummary.controllers.HeaderKeys.tcrAuthToken
-import uk.gov.hmrc.mobiletaxcreditssummary.domain.RenewalReference
-import uk.gov.hmrc.mobiletaxcreditssummary.domain.TcrAuthenticationToken.basicAuthString
 import uk.gov.hmrc.play.test.UnitSpec
 
 import scala.language.postfixOps
@@ -36,9 +33,6 @@ class BaseISpec extends UnitSpec with Matchers with OptionValues with WsScalaTes
   protected val nino1 = Nino("AA000000A")
   protected val nino2 = Nino("AP412713B")
   protected val acceptJsonHeader: (String, String) = "Accept" -> "application/vnd.hmrc.1.0+json"
-  protected val renewalReference: RenewalReference = RenewalReference("renewalReference")
-  protected val tcrAuthenticationToken: String = basicAuthString(nino1.value, renewalReference.value)
-  protected val tcrAuthTokenHeader: (String, String) = tcrAuthToken -> tcrAuthenticationToken
 
   def config: Map[String, Any] = Map(
     "auditing.enabled" -> false,

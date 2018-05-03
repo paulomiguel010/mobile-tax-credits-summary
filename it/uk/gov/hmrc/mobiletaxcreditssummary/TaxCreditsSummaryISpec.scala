@@ -25,7 +25,7 @@ import uk.gov.hmrc.mobiletaxcreditssummary.support.BaseISpec
 class TaxCreditsSummaryISpec extends BaseISpec with FileResource {
 
   "GET /income/:nino/tax-credits/tax-credits-summary " should {
-    def request(nino: Nino) = wsUrl(s"/income/${nino.value}/tax-credits/tax-credits-summary").withHeaders(acceptJsonHeader, tcrAuthTokenHeader)
+    def request(nino: Nino) = wsUrl(s"/income/${nino.value}/tax-credits/tax-credits-summary").withHeaders(acceptJsonHeader)
 
     "return a tax credit summary " in {
       grantAccess(nino1.value)
@@ -41,7 +41,7 @@ class TaxCreditsSummaryISpec extends BaseISpec with FileResource {
   }
 
   "GET /income/:nino/tax-credits/tax-credits-decision" should {
-    def request(nino: Nino) = wsUrl(s"/income/${nino.value}/tax-credits/tax-credits-decision").withHeaders(acceptJsonHeader, tcrAuthTokenHeader)
+    def request(nino: Nino) = wsUrl(s"/income/${nino.value}/tax-credits/tax-credits-decision").withHeaders(acceptJsonHeader)
 
     "return showData == false if excluded" in {
       grantAccess(nino1.value)

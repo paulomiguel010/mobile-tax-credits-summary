@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.mobiletaxcreditssummary.controllers
+package uk.gov.hmrc.mobiletaxcreditssummary.domain
 
-object HeaderKeys {
-    val tcrAuthToken="tcrAuthToken"
+case class RenewalReference(value: String) {
+  def stripSpaces = RenewalReference(value.replaceAll(" ", ""))
 }
