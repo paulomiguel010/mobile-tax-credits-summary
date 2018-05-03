@@ -23,8 +23,6 @@ The Tax Credits Summary object
   * **Code:** 200 <br />
     **Content:** 
 
-        [Source...](https://github.com/hmrc/personal-income/blob/master/app/uk/gov/hmrc/apigateway/personalincome/domain/TaxSummaryModel.scala#L389)
-
 ```json
 {
   "paymentSummary": {

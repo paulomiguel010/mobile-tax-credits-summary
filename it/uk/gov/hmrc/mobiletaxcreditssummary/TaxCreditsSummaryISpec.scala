@@ -22,7 +22,7 @@ import uk.gov.hmrc.mobiletaxcreditssummary.stubs.AuthStub.grantAccess
 import uk.gov.hmrc.mobiletaxcreditssummary.stubs.TaxCreditsBrokerStub._
 import uk.gov.hmrc.mobiletaxcreditssummary.support.BaseISpec
 
-class PersonalIncomeISpec extends BaseISpec with FileResource {
+class TaxCreditsSummaryISpec extends BaseISpec with FileResource {
 
   "GET /income/:nino/tax-credits/tax-credits-summary " should {
     def request(nino: Nino) = wsUrl(s"/income/${nino.value}/tax-credits/tax-credits-summary").withHeaders(acceptJsonHeader, tcrAuthTokenHeader)

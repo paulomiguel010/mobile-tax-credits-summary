@@ -30,19 +30,17 @@ import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 
 import scala.concurrent.{ExecutionContext, Future}
 
-trait PersonalIncomeService {
+trait TaxCreditsSummaryService {
 
-  //KEEP
   def getTaxCreditExclusion(nino: Nino)(implicit hc: HeaderCarrier, ex: ExecutionContext): Future[Exclusion]
 
-  //KEEP
   def getTaxCreditSummary(nino: Nino)(implicit hc: HeaderCarrier, ex: ExecutionContext): Future[TaxCreditSummary]
 }
 
 @Singleton
-class LivePersonalIncomeService @Inject()(taxCreditsBrokerConnector: TaxCreditsBrokerConnector,
-                                          val auditConnector: AuditConnector,
-                                          val appNameConfiguration: Configuration) extends PersonalIncomeService with Auditor {
+class LiveTaxCreditsSummaryService @Inject()(taxCreditsBrokerConnector: TaxCreditsBrokerConnector,
+                                             val auditConnector: AuditConnector,
+                                             val appNameConfiguration: Configuration) extends TaxCreditsSummaryService with Auditor {
 
   override def getTaxCreditExclusion(nino: Nino)(implicit hc: HeaderCarrier, ex: ExecutionContext): Future[Exclusion] = {
     withAudit("getTaxCreditExclusion", Map("nino" -> nino.value)) {
@@ -75,7 +73,7 @@ class LivePersonalIncomeService @Inject()(taxCreditsBrokerConnector: TaxCreditsB
   }
 }
 
-object SandboxPersonalIncomeService extends PersonalIncomeService with FileResource {
+object SandboxTaxCreditsSummaryService extends TaxCreditsSummaryService with FileResource {
 
   override def getTaxCreditSummary(nino: Nino)(implicit hc: HeaderCarrier, ex: ExecutionContext): Future[TaxCreditSummary] = {
     val resource: String = findResource(s"/resources/taxcreditsummary/${nino.value}.json").getOrElse(throw new IllegalArgumentException("Resource not found!"))

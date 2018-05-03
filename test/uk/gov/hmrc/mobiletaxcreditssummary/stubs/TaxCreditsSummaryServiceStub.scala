@@ -24,21 +24,21 @@ import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.mobiletaxcreditssummary.connectors.TaxCreditsBrokerConnector
 import uk.gov.hmrc.mobiletaxcreditssummary.domain.userdata.TaxCreditSummary
-import uk.gov.hmrc.mobiletaxcreditssummary.services.{LivePersonalIncomeService, PersonalIncomeService}
+import uk.gov.hmrc.mobiletaxcreditssummary.services.{LiveTaxCreditsSummaryService, TaxCreditsSummaryService}
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.play.test.UnitSpec
 
 import scala.concurrent.{ExecutionContext, Future}
 
-trait PersonalIncomeServiceStub extends UnitSpec {
+trait TaxCreditsSummaryServiceStub extends UnitSpec {
 
-  def stubTaxCreditSummary(response: TaxCreditSummary)(implicit personalIncomeService: PersonalIncomeService): OngoingStubbing[Future[TaxCreditSummary]] = {
+  def stubTaxCreditSummary(response: TaxCreditSummary)(implicit personalIncomeService: TaxCreditsSummaryService): OngoingStubbing[Future[TaxCreditSummary]] = {
     when(personalIncomeService.getTaxCreditSummary(any[Nino]())(any[HeaderCarrier](), any[ExecutionContext]())).thenReturn(response)
   }
 
-  class TestPersonalIncomeService(val taxCreditBrokerConnector: TaxCreditsBrokerConnector,
-                                  override val auditConnector: AuditConnector,
-                                  configuration: Configuration)
-    extends LivePersonalIncomeService(taxCreditBrokerConnector, auditConnector, configuration)
+  class TestTaxCreditsSummaryService(val taxCreditBrokerConnector: TaxCreditsBrokerConnector,
+                                     override val auditConnector: AuditConnector,
+                                     configuration: Configuration)
+    extends LiveTaxCreditsSummaryService(taxCreditBrokerConnector, auditConnector, configuration)
 
 }

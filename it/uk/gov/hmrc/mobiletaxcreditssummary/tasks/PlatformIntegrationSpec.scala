@@ -19,7 +19,7 @@ package uk.gov.hmrc.mobiletaxcreditssummary.tasks
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import com.google.inject.AbstractModule
-import it.utils.WiremockServiceLocatorSugar
+import utils.WiremockServiceLocatorSugar
 import org.scalatest.concurrent.PatienceConfiguration.Timeout
 import org.scalatest.concurrent.{Eventually, ScalaFutures}
 import org.scalatest.time.{Millis, Span}

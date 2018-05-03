@@ -27,12 +27,12 @@ import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.mobiletaxcreditssummary.connectors.TaxCreditsBrokerConnector
 import uk.gov.hmrc.mobiletaxcreditssummary.domain._
-import uk.gov.hmrc.mobiletaxcreditssummary.services.LivePersonalIncomeService
-import uk.gov.hmrc.mobiletaxcreditssummary.stubs.{AuthorisationStub, PersonalIncomeServiceStub, TaxCreditBrokerConnectorStub}
+import uk.gov.hmrc.mobiletaxcreditssummary.services.LiveTaxCreditsSummaryService
+import uk.gov.hmrc.mobiletaxcreditssummary.stubs.{AuthorisationStub, TaxCreditsSummaryServiceStub, TaxCreditBrokerConnectorStub}
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.play.test.{UnitSpec, WithFakeApplication}
 
-trait TestSetup extends MockitoSugar with UnitSpec with WithFakeApplication with PersonalIncomeServiceStub
+trait TestSetup extends MockitoSugar with UnitSpec with WithFakeApplication with TaxCreditsSummaryServiceStub
   with TaxCreditBrokerConnectorStub with AuthorisationStub {
 
   trait mocks {
@@ -40,7 +40,7 @@ trait TestSetup extends MockitoSugar with UnitSpec with WithFakeApplication with
     implicit val mockAuthConnector: AuthConnector = mock[AuthConnector]
     implicit val mockTaxCreditsBrokerConnector: TaxCreditsBrokerConnector = mock[TaxCreditsBrokerConnector]
     implicit val mockAuditConnector: AuditConnector = mock[AuditConnector]
-    implicit val mockLivePersonalIncomeService: LivePersonalIncomeService = mock[LivePersonalIncomeService]
+    implicit val mockLivePersonalIncomeService: LiveTaxCreditsSummaryService = mock[LiveTaxCreditsSummaryService]
     implicit val mockConfiguration: Configuration = fakeApplication.injector.instanceOf[Configuration]
   }
 

@@ -26,7 +26,7 @@ import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, NotFoundException, ServiceUnavailableException}
 import uk.gov.hmrc.mobiletaxcreditssummary.controllers.action.AccessControl
-import uk.gov.hmrc.mobiletaxcreditssummary.services.{LivePersonalIncomeService, PersonalIncomeService, SandboxPersonalIncomeService}
+import uk.gov.hmrc.mobiletaxcreditssummary.services.{LiveTaxCreditsSummaryService, TaxCreditsSummaryService, SandboxTaxCreditsSummaryService}
 import uk.gov.hmrc.play.HeaderCarrierConverter.fromHeadersAndSession
 import uk.gov.hmrc.play.bootstrap.controller.BaseController
 
@@ -55,11 +55,10 @@ trait ErrorHandling {
   }
 }
 
-trait PersonalIncomeController extends BaseController with AccessControl with ErrorHandling {
+trait TaxCreditsSummaryController extends BaseController with AccessControl with ErrorHandling {
 
-  val service: PersonalIncomeService
+  val service: TaxCreditsSummaryService
 
-  //KEEP
   final def getTaxCreditExclusion(nino: Nino, journeyId: Option[String] = None): Action[AnyContent] =
     validateAcceptWithAuth(acceptHeaderValidationRules, Option(nino)).async {
       implicit request =>
@@ -68,7 +67,6 @@ trait PersonalIncomeController extends BaseController with AccessControl with Er
           service.getTaxCreditExclusion(nino).map { res => Ok(Json.parse(s"""{"showData":${!res.excluded}}""")) })
     }
 
-  //KEEP
   final def taxCreditsSummary(nino: Nino, journeyId: Option[String] = None): Action[AnyContent] =
     validateAcceptWithAuth(acceptHeaderValidationRules, Option(nino)).async {
       implicit request =>
@@ -79,14 +77,14 @@ trait PersonalIncomeController extends BaseController with AccessControl with Er
 }
 
 @Singleton
-class SandboxPersonalIncomeController @Inject()(override val authConnector: AuthConnector,
-                                                @Named("controllers.confidenceLevel") override val confLevel: Int)
-  extends PersonalIncomeController {
+class SandboxTaxCreditsSummaryController @Inject()(override val authConnector: AuthConnector,
+                                                   @Named("controllers.confidenceLevel") override val confLevel: Int)
+  extends TaxCreditsSummaryController {
   override lazy val requiresAuth: Boolean = false
-  override val service = SandboxPersonalIncomeService
+  override val service = SandboxTaxCreditsSummaryService
 }
 
 @Singleton
-class LivePersonalIncomeController @Inject()(override val authConnector: AuthConnector,
-                                             @Named("controllers.confidenceLevel") override val confLevel: Int,
-                                             override val service: LivePersonalIncomeService) extends PersonalIncomeController
+class LiveTaxCreditsSummaryController @Inject()(override val authConnector: AuthConnector,
+                                                @Named("controllers.confidenceLevel") override val confLevel: Int,
+                                                override val service: LiveTaxCreditsSummaryService) extends TaxCreditsSummaryController
