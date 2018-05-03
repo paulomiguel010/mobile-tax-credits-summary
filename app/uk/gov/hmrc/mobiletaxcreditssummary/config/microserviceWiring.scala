@@ -52,7 +52,7 @@ class ApiServiceLocatorConnector @Inject()(override val runModeConfiguration: Co
   override val serviceUrl: String = serviceLocatorUrl
   override val handlerOK: () => Unit = () => Logger.info("Service is registered on the service locator")
   override val handlerError: Throwable => Unit = e => Logger.error("Service could not register on the service locator", e)
-  override val metadata: Option[Map[String, String]] = Some(Map("third-party-api" → "true"))
+  override val metadata: Option[Map[String, String]] = Some(Map("third-party-api" -> "true"))
   override val http: CorePost = wsHttp
 
   override def appNameConfiguration: Configuration = runModeConfiguration

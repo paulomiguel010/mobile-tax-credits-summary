@@ -21,8 +21,6 @@ import uk.gov.hmrc.http.HttpException
 
 case object ErrorUnauthorizedNoNino extends ErrorResponse(401, "UNAUTHORIZED", "NINO does not exist on account")
 
-case object ErrorNoAuthToken extends ErrorResponse(500, "NTC_RENEWAL_AUTH_ERROR", "No auth header supplied in http request")
-
 case object ClientRetryRequest extends ErrorResponse(429, "NTC_RETRY", "Client must retry the request.")
 
 class GrantAccessException(message: String) extends HttpException(message, 401)
@@ -34,4 +32,3 @@ class NinoNotFoundOnAccount extends GrantAccessException("Unauthorised! NINO not
 class AccountWithLowCL extends GrantAccessException("Unauthorised! Account with low CL!")
 
 class AccountWithWeakCredStrength(message: String) extends uk.gov.hmrc.http.HttpException(message, 401)
-

@@ -32,10 +32,10 @@ trait ServicesCircuitBreaker extends UsingCircuitBreaker with ServicesConfig {
   )
 
   override protected def breakOnException(t: Throwable): Boolean = t match {
-    case t: BadRequestException => false
-    case t: NotFoundException =>   false
-    case t: Upstream4xxResponse => false
+    case _: BadRequestException => false
+    case _: NotFoundException => false
+    case _: Upstream4xxResponse => false
     case _: Upstream5xxResponse => true
-    case _                      => true
+    case _ => true
   }
 }
