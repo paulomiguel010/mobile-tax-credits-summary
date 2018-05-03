@@ -60,7 +60,7 @@ class PlatformIntegrationSpec extends BaseISpec with Eventually with WiremockSer
   }
 
   trait Setup {
-    val documentationController = DocumentationController
+    val documentationController: DocumentationController.type = DocumentationController
     val request = FakeRequest()
 
     implicit val system: ActorSystem = ActorSystem()

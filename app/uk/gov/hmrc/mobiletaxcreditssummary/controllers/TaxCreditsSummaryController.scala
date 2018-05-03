@@ -81,7 +81,7 @@ class SandboxTaxCreditsSummaryController @Inject()(override val authConnector: A
                                                    @Named("controllers.confidenceLevel") override val confLevel: Int)
   extends TaxCreditsSummaryController {
   override lazy val requiresAuth: Boolean = false
-  override val service = SandboxTaxCreditsSummaryService
+  override val service: SandboxTaxCreditsSummaryService.type = SandboxTaxCreditsSummaryService
 }
 
 @Singleton

@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.mobiletaxcreditssummary.domain.userdata
 
-import play.api.libs.json.Json
+import play.api.libs.json.{Json, OFormat}
 
 case class TaxCreditSummary(paymentSummary: PaymentSummary,
                                personalDetails: PersonalDetails,
@@ -24,5 +24,5 @@ case class TaxCreditSummary(paymentSummary: PaymentSummary,
                                children: Children)
 
 object TaxCreditSummary {
-  implicit val format = Json.format[TaxCreditSummary]
+  implicit val format: OFormat[TaxCreditSummary] = Json.format[TaxCreditSummary]
 }

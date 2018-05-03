@@ -43,7 +43,7 @@ trait AccountAccessControl extends Results with Authorisation {
     implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromHeadersAndSession(request.headers, None)
 
 
-    grantAccess(taxId.getOrElse(Nino(""))).flatMap { access ⇒
+    grantAccess(taxId.getOrElse(Nino(""))).flatMap { _ =>
       block(request)
     }.recover {
       case _: uk.gov.hmrc.http.Upstream4xxResponse =>
