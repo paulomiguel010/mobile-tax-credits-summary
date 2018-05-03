@@ -18,7 +18,7 @@ defaultSettings()
 scalaVersion := "2.11.11"
 crossScalaVersions := Seq("2.11.11")
 
-PlayKeys.playDefaultPort := 8231
+PlayKeys.playDefaultPort := 8246
 
 libraryDependencies ++= AppDependencies()
 retrieveManaged := true
