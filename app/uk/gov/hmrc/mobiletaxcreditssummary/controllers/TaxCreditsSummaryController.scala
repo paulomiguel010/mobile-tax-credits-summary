@@ -60,14 +60,6 @@ trait TaxCreditsSummaryController extends BaseController with AccessControl with
 
   val service: TaxCreditsSummaryService
 
-  final def getTaxCreditExclusion(nino: Nino, journeyId: Option[String] = None): Action[AnyContent] =
-    validateAcceptWithAuth(acceptHeaderValidationRules, Option(nino)).async {
-      implicit request =>
-        implicit val hc: HeaderCarrier = fromHeadersAndSession(request.headers, None)
-        errorWrapper(
-          service.getTaxCreditExclusion(nino).map { res => Ok(Json.parse(s"""{"showData":${!res.excluded}}""")) })
-    }
-
   final def taxCreditsSummary(nino: Nino, journeyId: Option[String] = None): Action[AnyContent] =
     validateAcceptWithAuth(acceptHeaderValidationRules, Option(nino)).async {
       implicit request =>
