@@ -33,10 +33,20 @@ class TaxCreditsSummaryISpec extends BaseISpec with FileResource {
       partnerDetailsAreFound(nino1, nino2)
       paymntSummaryIsFound(nino1)
       personalDetailsAreFound(nino1)
+      exlusionFlagIsFound(nino1, excluded = false)
 
       val response = await(request(nino1).get())
       response.status shouldBe 200
-      (response.json \ "paymentSummary" \ "workingTaxCredit" \ "paymentFrequency").as[String] shouldBe "weekly"
+      (response.json \ "taxCreditSummary" \ "paymentSummary" \ "workingTaxCredit" \ "paymentFrequency").as[String] shouldBe "weekly"
+    }
+
+    "return empty tax summary response if excluded" in {
+      grantAccess(nino1.value)
+      exlusionFlagIsFound(nino1, excluded = true)
+
+      val response = await(request(nino1).get())
+      response.status shouldBe 200
+      (response.json \ "taxCreditSummary").get.toString shouldBe "{}"
     }
   }
 
