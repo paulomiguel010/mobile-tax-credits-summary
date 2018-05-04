@@ -28,11 +28,11 @@ import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.mobiletaxcreditssummary.connectors.TaxCreditsBrokerConnector
 import uk.gov.hmrc.mobiletaxcreditssummary.domain._
 import uk.gov.hmrc.mobiletaxcreditssummary.services.LiveTaxCreditsSummaryService
-import uk.gov.hmrc.mobiletaxcreditssummary.stubs.{AuthorisationStub, TaxCreditsSummaryServiceStub, TaxCreditBrokerConnectorStub}
+import uk.gov.hmrc.mobiletaxcreditssummary.stubs.{AuthorisationStub, TaxCreditBrokerConnectorStub}
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.play.test.{UnitSpec, WithFakeApplication}
 
-trait TestSetup extends MockitoSugar with UnitSpec with WithFakeApplication with TaxCreditsSummaryServiceStub
+trait TestSetup extends MockitoSugar with UnitSpec with WithFakeApplication
   with TaxCreditBrokerConnectorStub with AuthorisationStub {
 
   trait mocks {

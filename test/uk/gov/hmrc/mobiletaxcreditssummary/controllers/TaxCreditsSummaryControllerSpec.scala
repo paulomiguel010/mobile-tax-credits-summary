@@ -30,7 +30,7 @@ import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http._
 import uk.gov.hmrc.mobiletaxcreditssummary.domain._
 import uk.gov.hmrc.mobiletaxcreditssummary.domain.userdata._
-import uk.gov.hmrc.mobiletaxcreditssummary.services.TaxCreditsSummaryService
+import uk.gov.hmrc.mobiletaxcreditssummary.services.{LiveTaxCreditsSummaryService, TaxCreditsSummaryService}
 import uk.gov.hmrc.play.test.WithFakeApplication
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -51,7 +51,7 @@ class TestTaxCreditsSummarySpec extends TestSetup with WithFakeApplication with 
       stubTaxCreditBrokerConnectorGetExclusion(Exclusion(false))
       val expectedResult = TaxCreditSummaryResponse(Some(TaxCreditSummary(paymentSummary, personalDetails(nino),
         Some(partnerDetails(nino)), Children(Seq(SarahSmith, JosephSmith, MarySmith)))))
-      override val mockLivePersonalIncomeService = new TestTaxCreditsSummaryService(mockTaxCreditsBrokerConnector, mockAuditConnector, mockConfiguration)
+      override val mockLivePersonalIncomeService = new LiveTaxCreditsSummaryService(mockTaxCreditsBrokerConnector, mockAuditConnector, mockConfiguration)
       val controller = new TestTaxCreditsSummaryController(mockAuthConnector, mockLivePersonalIncomeService, 200)
       val result: Result = await(controller.taxCreditsSummary(Nino(nino))(emptyRequestWithAcceptHeader(renewalReference, Nino(nino))))
       status(result) shouldBe 200
@@ -62,7 +62,7 @@ class TestTaxCreditsSummarySpec extends TestSetup with WithFakeApplication with 
       stubAuthorisationGrantAccess(Some(nino) and L200)
       stubTaxCreditBrokerConnectorGetExclusion(Exclusion(true))
       val expectedResult: JsValue = Json.parse("""{"taxCreditSummary":{}}""")
-      override val mockLivePersonalIncomeService = new TestTaxCreditsSummaryService(mockTaxCreditsBrokerConnector, mockAuditConnector, mockConfiguration)
+      override val mockLivePersonalIncomeService = new LiveTaxCreditsSummaryService(mockTaxCreditsBrokerConnector, mockAuditConnector, mockConfiguration)
       val controller = new TestTaxCreditsSummaryController(mockAuthConnector, mockLivePersonalIncomeService, 200)
       val result: Result = await(controller.taxCreditsSummary(Nino(nino))(emptyRequestWithAcceptHeader(renewalReference, Nino(nino))))
       status(result) shouldBe 200
@@ -80,7 +80,7 @@ class TestTaxCreditsSummarySpec extends TestSetup with WithFakeApplication with 
       stubTaxCreditBrokerConnectorGetExclusion(Exclusion(false))
       when(mockTaxCreditsBrokerConnector.getChildren(any[TaxCreditsNino]())(any[HeaderCarrier](), any[ExecutionContext]()))
         .thenReturn(Future.failed(new ServiceUnavailableException("controlled explosion kaboom!!")))
-      override val mockLivePersonalIncomeService = new TestTaxCreditsSummaryService(mockTaxCreditsBrokerConnector, mockAuditConnector, mockConfiguration)
+      override val mockLivePersonalIncomeService = new LiveTaxCreditsSummaryService(mockTaxCreditsBrokerConnector, mockAuditConnector, mockConfiguration)
       val controller = new TestTaxCreditsSummaryController(mockAuthConnector, mockLivePersonalIncomeService, 200)
       status(await(controller.taxCreditsSummary(Nino(nino))(emptyRequestWithAcceptHeader(renewalReference, Nino(nino))))) shouldBe 429
     }
@@ -89,7 +89,7 @@ class TestTaxCreditsSummarySpec extends TestSetup with WithFakeApplication with 
       stubAuthorisationGrantAccess(Some(nino) and L200)
       when(mockTaxCreditsBrokerConnector.getExclusion(any[TaxCreditsNino]())(any[HeaderCarrier](), any[ExecutionContext]()))
         .thenReturn(Future.failed(new ServiceUnavailableException("controlled explosion kaboom!!")))
-      override val mockLivePersonalIncomeService = new TestTaxCreditsSummaryService(mockTaxCreditsBrokerConnector, mockAuditConnector, mockConfiguration)
+      override val mockLivePersonalIncomeService = new LiveTaxCreditsSummaryService(mockTaxCreditsBrokerConnector, mockAuditConnector, mockConfiguration)
       val controller = new TestTaxCreditsSummaryController(mockAuthConnector, mockLivePersonalIncomeService, 200)
       status(await(controller.taxCreditsSummary(Nino(nino))(emptyRequestWithAcceptHeader(renewalReference, Nino(nino))))) shouldBe 429
     }
@@ -104,7 +104,7 @@ class TestTaxCreditsSummarySpec extends TestSetup with WithFakeApplication with 
       val expectedResult = TaxCreditSummaryResponse(Some(TaxCreditSummary(paymentSummary, personalDetails(nino),
         Some(partnerDetails(nino)), Children(Seq(SarahSmith, JosephSmith, MarySmith)))))
       override val mockLivePersonalIncomeService =
-        new TestTaxCreditsSummaryService(mockTaxCreditsBrokerConnector, mockAuditConnector, mockConfiguration)
+        new LiveTaxCreditsSummaryService(mockTaxCreditsBrokerConnector, mockAuditConnector, mockConfiguration)
       val controller = new TestTaxCreditsSummaryController(mockAuthConnector, mockLivePersonalIncomeService, 200)
       val result: Result = await(controller.taxCreditsSummary(Nino(nino), Some("unique-journey-id"))
       (emptyRequestWithAcceptHeader(renewalReference, Nino(nino))))
