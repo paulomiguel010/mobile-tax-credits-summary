@@ -18,10 +18,11 @@ The Tax Credits Summary object
    
    The nino given must be a valid nino. ([http://www.hmrc.gov.uk/manuals/nimmanual/nim39110.htm](http://www.hmrc.gov.uk/manuals/nimmanual/nim39110.htm))
 
-* **Success Response:**
+* **Success Responses:**
 
   * **Code:** 200 <br />
-    **Content:** 
+    **Note:** If the user is not excluded <br />
+    **Content:**
 
 ```json
 {
@@ -188,8 +189,18 @@ The Tax Credits Summary object
    }
 }
 ```
+
+  * **Code:** 200 <br />
+    **Note:** If the user is excluded <br />
+    **Content:**
+    
+```json
+{
+   "taxCreditSummary":{}
+}
+```
  
-* **Error Response:**
+* **Error Responses:**
 
   * **Code:** 400 BADREQUEST <br />
     **Content:** `{"code":"BADREQUEST","message":"Bad Request"}`

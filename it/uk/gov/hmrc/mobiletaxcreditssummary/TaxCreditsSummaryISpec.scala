@@ -34,7 +34,7 @@ class TaxCreditsSummaryISpec extends BaseISpec with FileResource {
       partnerDetailsAreFound(nino1, nino2)
       paymntSummaryIsFound(nino1)
       personalDetailsAreFound(nino1)
-      exlusionFlagIsFound(nino1, excluded = false)
+      exclusionFlagIsFound(nino1, excluded = false)
 
       val response = await(request(nino1).get())
       response.status shouldBe 200
@@ -43,12 +43,11 @@ class TaxCreditsSummaryISpec extends BaseISpec with FileResource {
 
     "return empty tax summary response if excluded" in {
       grantAccess(nino1.value)
-      exlusionFlagIsFound(nino1, excluded = true)
+      exclusionFlagIsFound(nino1, excluded = true)
 
       val response = await(request(nino1).get())
       response.status shouldBe 200
       (response.json \ "taxCreditSummary").get.toString shouldBe "{}"
     }
   }
-
 }
