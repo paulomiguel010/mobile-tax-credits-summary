@@ -18,7 +18,6 @@ API
 | *Task* | *Supported Methods* | *Description* |
 |--------|----|----|
 | ```/income/:nino/tax-credits/tax-credits-summary``` | GET | Fetch the Tax Credits Summary object for a given NINO. [More...](docs/tax-credits-summary.md)|
-| ```/income/:nino/tax-credits/tax-credits-decision``` | GET | Fetch the Tax Credits renewal status. [More...](docs/tax-credits-decision.md)  |
 
 # Sandbox
 All the above endpoints are accessible on sandbox with `/sandbox` prefix on each endpoint,e.g.

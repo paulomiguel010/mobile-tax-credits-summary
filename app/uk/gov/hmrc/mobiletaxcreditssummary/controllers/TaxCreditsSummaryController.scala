@@ -26,7 +26,8 @@ import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, NotFoundException, ServiceUnavailableException}
 import uk.gov.hmrc.mobiletaxcreditssummary.controllers.action.AccessControl
-import uk.gov.hmrc.mobiletaxcreditssummary.services.{LiveTaxCreditsSummaryService, TaxCreditsSummaryService, SandboxTaxCreditsSummaryService}
+import uk.gov.hmrc.mobiletaxcreditssummary.domain.userdata._
+import uk.gov.hmrc.mobiletaxcreditssummary.services.{LiveTaxCreditsSummaryService, SandboxTaxCreditsSummaryService, TaxCreditsSummaryService}
 import uk.gov.hmrc.play.HeaderCarrierConverter.fromHeadersAndSession
 import uk.gov.hmrc.play.bootstrap.controller.BaseController
 
@@ -59,19 +60,16 @@ trait TaxCreditsSummaryController extends BaseController with AccessControl with
 
   val service: TaxCreditsSummaryService
 
-  final def getTaxCreditExclusion(nino: Nino, journeyId: Option[String] = None): Action[AnyContent] =
-    validateAcceptWithAuth(acceptHeaderValidationRules, Option(nino)).async {
-      implicit request =>
-        implicit val hc: HeaderCarrier = fromHeadersAndSession(request.headers, None)
-        errorWrapper(
-          service.getTaxCreditExclusion(nino).map { res => Ok(Json.parse(s"""{"showData":${!res.excluded}}""")) })
-    }
-
   final def taxCreditsSummary(nino: Nino, journeyId: Option[String] = None): Action[AnyContent] =
     validateAcceptWithAuth(acceptHeaderValidationRules, Option(nino)).async {
       implicit request =>
         implicit val hc: HeaderCarrier = fromHeadersAndSession(request.headers, None)
-        errorWrapper(service.getTaxCreditSummary(nino).map(summary => Ok(toJson(summary))))
+        errorWrapper {
+          service.getTaxCreditExclusion(nino).flatMap { res =>
+            if (res.excluded) Future successful Ok(Json.parse( """{"taxCreditSummary":{}}"""))
+            else service.getTaxCreditSummary(nino).map(summary => Ok(toJson(TaxCreditSummaryResponse(summary))))
+          }
+        }
     }
 
 }

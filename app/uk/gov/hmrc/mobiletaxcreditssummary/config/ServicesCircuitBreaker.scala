@@ -17,7 +17,7 @@
 package uk.gov.hmrc.mobiletaxcreditssummary.config
 
 import uk.gov.hmrc.circuitbreaker.{CircuitBreakerConfig, UsingCircuitBreaker}
-import uk.gov.hmrc.http.{BadRequestException, NotFoundException, Upstream4xxResponse, Upstream5xxResponse}
+import uk.gov.hmrc.http.{BadRequestException, NotFoundException, Upstream4xxResponse}
 import uk.gov.hmrc.play.config.ServicesConfig
 
 trait ServicesCircuitBreaker extends UsingCircuitBreaker with ServicesConfig {
@@ -32,10 +32,7 @@ trait ServicesCircuitBreaker extends UsingCircuitBreaker with ServicesConfig {
   )
 
   override protected def breakOnException(t: Throwable): Boolean = t match {
-    case _: BadRequestException => false
-    case _: NotFoundException => false
-    case _: Upstream4xxResponse => false
-    case _: Upstream5xxResponse => true
+    case _: BadRequestException | _: NotFoundException | _: Upstream4xxResponse => false
     case _ => true
   }
 }

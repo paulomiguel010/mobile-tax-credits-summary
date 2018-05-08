@@ -186,7 +186,7 @@ object TaxCreditsBrokerStub {
     stubFor(get(urlPathEqualTo(s"/tcs/${nino.value}/personal-details")).willReturn(
       aResponse().withStatus(200).withHeader("Content-Type", "application/json").withBody(personalDetailsJson(nino))))
 
-  def exlusionFlagIsFound(nino: Nino, excluded:Boolean): Unit =
+  def exclusionFlagIsFound(nino: Nino, excluded:Boolean): Unit =
     stubFor(get(urlPathEqualTo(s"/tcs/${nino.value}/exclusion")).willReturn(
       aResponse().withStatus(200).withHeader("Content-Type", "application/json").withBody(s"""{ "excluded" : $excluded }""")))
 }
