@@ -67,7 +67,7 @@ trait TaxCreditsSummaryController extends BaseController with AccessControl with
         errorWrapper {
           service.getTaxCreditExclusion(nino).flatMap { res =>
             if (res.excluded) Future successful Ok(Json.parse( """{"taxCreditSummary":{}}"""))
-            else service.getTaxCreditSummary(nino).map(summary => Ok(toJson(TaxCreditSummaryResponse(Some(summary)))))
+            else service.getTaxCreditSummary(nino).map(summary => Ok(toJson(TaxCreditSummaryResponse(summary))))
           }
         }
     }
