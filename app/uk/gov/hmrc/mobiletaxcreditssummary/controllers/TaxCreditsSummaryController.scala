@@ -66,8 +66,8 @@ trait TaxCreditsSummaryController extends BaseController with AccessControl with
         implicit val hc: HeaderCarrier = fromHeadersAndSession(request.headers, None)
         errorWrapper {
           service.getTaxCreditExclusion(nino).flatMap { res =>
-            if (res.excluded) Future successful Ok(Json.parse( """{"taxCreditSummary":{}}"""))
-            else service.getTaxCreditSummary(nino).map(summary => Ok(toJson(TaxCreditSummaryResponse(summary))))
+            if (res.excluded) Future successful Ok(toJson(TaxCreditSummaryResponse(excluded = true, taxCreditSummary = None)))
+            else service.getTaxCreditSummary(nino).map(summary => Ok(toJson(TaxCreditSummaryResponse(taxCreditSummary = Some(summary)))))
           }
         }
     }
