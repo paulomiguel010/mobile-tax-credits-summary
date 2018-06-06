@@ -49,8 +49,8 @@ class TestTaxCreditsSummarySpec extends TestSetup with WithFakeApplication with 
       stubTaxCreditBrokerConnectorGetPersonalDetails(personalDetails(nino))
       stubTaxCreditBrokerConnectorGetPaymentSummary(paymentSummary)
       stubTaxCreditBrokerConnectorGetExclusion(Exclusion(false))
-      val expectedResult = TaxCreditSummaryResponse(TaxCreditSummary(paymentSummary, personalDetails(nino),
-        Some(partnerDetails(nino)), Children(Seq(SarahSmith, JosephSmith, MarySmith))))
+      val expectedResult = TaxCreditSummaryResponse(excluded = false, Some(TaxCreditSummary(paymentSummary, personalDetails(nino),
+        Some(partnerDetails(nino)), Children(Seq(SarahSmith, JosephSmith, MarySmith)))))
       override val mockLivePersonalIncomeService = new LiveTaxCreditsSummaryService(mockTaxCreditsBrokerConnector, mockAuditConnector, mockConfiguration)
       val controller = new TestTaxCreditsSummaryController(mockAuthConnector, mockLivePersonalIncomeService, 200)
       val result: Result = await(controller.taxCreditsSummary(Nino(nino))(emptyRequestWithAcceptHeader(renewalReference, Nino(nino))))
@@ -58,15 +58,15 @@ class TestTaxCreditsSummarySpec extends TestSetup with WithFakeApplication with 
       contentAsJson(result) shouldBe toJson(expectedResult)
     }
 
-    "return empty tax credit summary when user is excluded" in new mocks {
+    "return excluded = true when user is excluded" in new mocks {
       stubAuthorisationGrantAccess(Some(nino) and L200)
       stubTaxCreditBrokerConnectorGetExclusion(Exclusion(true))
-      val expectedResult: JsValue = Json.parse("""{"taxCreditSummary":{}}""")
+      val expectedResult: JsValue = Json.parse("""{"excluded": true}""")
       override val mockLivePersonalIncomeService = new LiveTaxCreditsSummaryService(mockTaxCreditsBrokerConnector, mockAuditConnector, mockConfiguration)
       val controller = new TestTaxCreditsSummaryController(mockAuthConnector, mockLivePersonalIncomeService, 200)
       val result: Result = await(controller.taxCreditsSummary(Nino(nino))(emptyRequestWithAcceptHeader(renewalReference, Nino(nino))))
       status(result) shouldBe 200
-      contentAsJson(result) shouldBe toJson(expectedResult)
+      contentAsJson(result) shouldBe expectedResult
     }
 
     "return 401 when the nino in the request does not match the authority nino" in new mocks {
@@ -101,8 +101,8 @@ class TestTaxCreditsSummarySpec extends TestSetup with WithFakeApplication with 
       stubTaxCreditBrokerConnectorGetPersonalDetails(personalDetails(nino))
       stubTaxCreditBrokerConnectorGetPaymentSummary(paymentSummary)
       stubTaxCreditBrokerConnectorGetExclusion(Exclusion(false))
-      val expectedResult = TaxCreditSummaryResponse(TaxCreditSummary(paymentSummary, personalDetails(nino),
-        Some(partnerDetails(nino)), Children(Seq(SarahSmith, JosephSmith, MarySmith))))
+      val expectedResult = TaxCreditSummaryResponse(taxCreditSummary = Some(TaxCreditSummary(paymentSummary, personalDetails(nino),
+        Some(partnerDetails(nino)), Children(Seq(SarahSmith, JosephSmith, MarySmith)))))
       override val mockLivePersonalIncomeService =
         new LiveTaxCreditsSummaryService(mockTaxCreditsBrokerConnector, mockAuditConnector, mockConfiguration)
       val controller = new TestTaxCreditsSummaryController(mockAuthConnector, mockLivePersonalIncomeService, 200)
@@ -141,7 +141,7 @@ class TestTaxCreditsSummarySpec extends TestSetup with WithFakeApplication with 
       val controller = new SandboxTaxCreditsSummaryController(mockAuthConnector, 200)
       val result: Result = await(controller.taxCreditsSummary(Nino(nino)).apply(fakeRequest))
       val expectedTaxCreditSummary: TaxCreditSummary = Json.parse(findResource(s"/resources/taxcreditsummary/$nino.json").get).as[TaxCreditSummary]
-      val expectedResult: TaxCreditSummaryResponse = TaxCreditSummaryResponse(expectedTaxCreditSummary)
+      val expectedResult: TaxCreditSummaryResponse = TaxCreditSummaryResponse(taxCreditSummary = Some(expectedTaxCreditSummary))
       contentAsJson(result) shouldBe toJson(expectedResult)
     }
   }
