@@ -32,6 +32,7 @@ class BaseISpec extends UnitSpec with Matchers with OptionValues with WsScalaTes
 
   protected val nino1 = Nino("AA000000A")
   protected val nino2 = Nino("AP412713B")
+  protected val sandboxNino = Nino("CS700100A")
   protected val acceptJsonHeader: (String, String) = "Accept" -> "application/vnd.hmrc.1.0+json"
 
   def config: Map[String, Any] = Map(
