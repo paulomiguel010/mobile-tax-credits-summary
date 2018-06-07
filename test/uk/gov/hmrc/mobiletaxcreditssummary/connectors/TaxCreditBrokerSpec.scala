@@ -46,7 +46,7 @@ class TaxCreditBrokerSpec extends UnitSpec with ScalaFutures with WithFakeApplic
     val expectedPaymentCTC = FuturePayment(140.12, expectedNextDueDate, oneOffPayment = false)
     val paymentSectionCTC = PaymentSection(List(expectedPaymentCTC), "weekly")
     val paymentSectionWTC = PaymentSection(List(expectedPaymentWTC), "weekly")
-    val paymentSummary = PaymentSummary(Some(paymentSectionWTC), Some(paymentSectionCTC), paymentEnabled = true)
+    val paymentSummary = PaymentSummary(Some(paymentSectionWTC), Some(paymentSectionCTC), paymentEnabled = Some(true))
 
 
     lazy val http500Response: Future[Nothing] = Future.failed(Upstream5xxResponse("Error", 500, 500))

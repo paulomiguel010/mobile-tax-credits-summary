@@ -76,7 +76,7 @@ class TaxCreditsSummaryControllerSpec extends TestSetup with WithFakeApplication
       mockAuthorisationGrantAccess(Some(nino) and L200)
       mockTaxCreditBrokerConnectorGetPartnerDetails(None, TaxCreditsNino(nino))
       mockTaxCreditBrokerConnectorGetPersonalDetails(PersonalDetails("", "", TaxCreditsNino(nino), Address("", "", None, None, None), None, None, None, None), TaxCreditsNino(nino))
-      mockTaxCreditBrokerConnectorGetPaymentSummary(PaymentSummary(None, None, paymentEnabled = false, None), TaxCreditsNino(nino))
+      mockTaxCreditBrokerConnectorGetPaymentSummary(PaymentSummary(None, None, paymentEnabled = Some(false), None), TaxCreditsNino(nino))
       mockTaxCreditBrokerConnectorGetExclusion(Exclusion(false), TaxCreditsNino(nino))
       mockTaxCreditBrokerConnectorGetChildrenFailure(new ServiceUnavailableException("controlled explosion kaboom!!"), TaxCreditsNino(nino))
       mockAuditGetTaxCreditExclusion(Nino(nino))

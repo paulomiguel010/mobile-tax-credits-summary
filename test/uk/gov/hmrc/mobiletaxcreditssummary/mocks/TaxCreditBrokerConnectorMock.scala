@@ -33,7 +33,7 @@ trait TaxCreditBrokerConnectorMock extends MockFactory {
   val expectedPaymentCTC = FuturePayment(140.12, expectedNextDueDate, oneOffPayment = false)
   val paymentSectionCTC = PaymentSection(List(expectedPaymentCTC), "weekly")
   val paymentSectionWTC = PaymentSection(List(expectedPaymentWTC), "weekly")
-  val paymentSummary = PaymentSummary(Some(paymentSectionWTC), Some(paymentSectionCTC), paymentEnabled = true)
+  val paymentSummary = PaymentSummary(Some(paymentSectionWTC), Some(paymentSectionCTC), paymentEnabled = Some(true))
 
   val AGE16: DateTime = DateTimeUtils.now.minusYears(16)
   val AGE15: DateTime = DateTimeUtils.now.minusYears(15)
