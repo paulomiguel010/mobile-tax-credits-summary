@@ -19,21 +19,21 @@ package uk.gov.hmrc.mobiletaxcreditssummary.domain.userdata
 import play.api.libs.json.{Json, OFormat}
 import uk.gov.hmrc.mobiletaxcreditssummary.domain.TaxCreditsNino
 
-case class PartnerDetails(
-  forename:String,
-  otherForenames: Option[String],
-  surname: String,
-  nino: TaxCreditsNino,
-  address: Address,
-  wtcPaymentFrequency: Option[String],
-  ctcPaymentFrequency: Option[String],
-  dayPhoneNumber: Option[String],
-  eveningPhoneNumber: Option[String]
-) {
+case class PartnerDetails(forename: String,
+                          otherForenames: Option[String],
+                          surname: String,
+                          nino: TaxCreditsNino,
+                          address: Address,
+                          wtcPaymentFrequency: Option[String],
+                          ctcPaymentFrequency: Option[String],
+                          dayPhoneNumber: Option[String],
+                          eveningPhoneNumber: Option[String]
+                         ) {
   val fullName: String = forename + " " + otherForenames.map(_ + " ").getOrElse("") + surname
 }
 
 object PartnerDetails {
   def key: String = "partner-details-data"
+
   implicit val formats: OFormat[PartnerDetails] = Json.format[PartnerDetails]
 }
