@@ -12,7 +12,7 @@ private object AppDependencies {
   private val circuitBreaker = "3.2.0"
   private val hmrctestVersion = "3.0.0"
   private val wiremockVersion = "2.10.1"
-  private val mockitoVersion = "2.11.0"
+  private val scalamockVersion = "4.0.0"
   private val scalatestplusPlayVersion = "2.0.1"
   private val cucumberVersion = "1.2.5"
 
@@ -36,7 +36,7 @@ private object AppDependencies {
     def apply(): Seq[ModuleID] = new TestDependencies {
       override lazy val test = Seq(
         "uk.gov.hmrc" %% "hmrctest" % hmrctestVersion % scope,
-        "org.mockito" % "mockito-core" % mockitoVersion % scope
+        "org.scalamock" %% "scalamock" % scalamockVersion % scope
       )
     }.test
   }
@@ -52,7 +52,6 @@ private object AppDependencies {
         "info.cukes" %% "cucumber-scala" % cucumberVersion % scope,
         "info.cukes" % "cucumber-junit" % cucumberVersion % scope,
         "com.github.tomakehurst" % "wiremock" % wiremockVersion % scope,
-        "org.mockito" % "mockito-core" % mockitoVersion % scope,
         "org.scalatestplus.play" %% "scalatestplus-play" % scalatestplusPlayVersion % scope
       )
     }.test

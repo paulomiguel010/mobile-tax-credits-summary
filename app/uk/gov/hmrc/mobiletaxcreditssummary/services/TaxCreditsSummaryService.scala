@@ -18,8 +18,6 @@ package uk.gov.hmrc.mobiletaxcreditssummary.services
 
 import com.google.inject.{Inject, Singleton}
 import play.api.Configuration
-import play.api.libs.json.Json
-import uk.gov.hmrc.api.sandbox._
 import uk.gov.hmrc.api.service._
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
@@ -71,15 +69,4 @@ class LiveTaxCreditsSummaryService @Inject()(taxCreditsBrokerConnector: TaxCredi
       } yield TaxCreditSummary(paymentSummary, personalDetails, partnerDetails, children)
     }
   }
-}
-
-object SandboxTaxCreditsSummaryService extends TaxCreditsSummaryService with FileResource {
-
-  override def getTaxCreditSummary(nino: Nino)(implicit hc: HeaderCarrier, ex: ExecutionContext): Future[TaxCreditSummary] = {
-    val resource: String = findResource(s"/resources/taxcreditsummary/${nino.value}.json").getOrElse(throw new IllegalArgumentException("Resource not found!"))
-    Future.successful(Json.parse(resource).as[TaxCreditSummary])
-  }
-
-  override def getTaxCreditExclusion(nino: Nino)(implicit hc: HeaderCarrier, ex: ExecutionContext): Future[Exclusion] = Future.successful(Exclusion(false))
-
 }

@@ -18,8 +18,8 @@ package uk.gov.hmrc.mobiletaxcreditssummary.connectors
 
 import com.typesafe.config.Config
 import org.joda.time.DateTime
+import org.scalamock.scalatest.MockFactory
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.mockito.MockitoSugar
 import play.api.libs.json.Json
 import play.api.{Configuration, Environment}
 import uk.gov.hmrc.circuitbreaker.CircuitBreakerConfig
@@ -37,7 +37,7 @@ import scala.concurrent.Future
 
 class TaxCreditBrokerSpec extends UnitSpec with ScalaFutures with WithFakeApplication with CircuitBreakerTest {
 
-  trait Setup extends MockitoSugar {
+  trait Setup extends MockFactory {
     implicit lazy val hc: HeaderCarrier = HeaderCarrier()
 
     val expectedNextDueDate: DateTime = DateTime.parse("2015-07-16")

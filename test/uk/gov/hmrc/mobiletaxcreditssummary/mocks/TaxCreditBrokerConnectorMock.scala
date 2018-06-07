@@ -14,22 +14,19 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.mobiletaxcreditssummary.stubs
+package uk.gov.hmrc.mobiletaxcreditssummary.mocks
 
 import org.joda.time.DateTime
-import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito.when
-import org.mockito.stubbing.OngoingStubbing
+import org.scalamock.scalatest.MockFactory
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.mobiletaxcreditssummary.connectors.TaxCreditsBrokerConnector
 import uk.gov.hmrc.mobiletaxcreditssummary.domain.TaxCreditsNino
 import uk.gov.hmrc.mobiletaxcreditssummary.domain.userdata._
-import uk.gov.hmrc.play.test.UnitSpec
 import uk.gov.hmrc.time.DateTimeUtils
 
 import scala.concurrent.{ExecutionContext, Future}
 
-trait TaxCreditBrokerConnectorStub extends UnitSpec {
+trait TaxCreditBrokerConnectorMock extends MockFactory {
 
   val expectedNextDueDate: DateTime = DateTime.parse("2015-07-16")
   val expectedPaymentWTC = FuturePayment(160.34, expectedNextDueDate, oneOffPayment = false)
@@ -57,24 +54,25 @@ trait TaxCreditBrokerConnectorStub extends UnitSpec {
 
   def partnerDetails(nino: String) = PartnerDetails("forename", Some("othernames"), "surname", TaxCreditsNino(nino), address, None, None, None, None)
 
-  def stubTaxCreditBrokerConnectorGetChildren(response: Children)(implicit taxCreditBrokerConnector: TaxCreditsBrokerConnector): OngoingStubbing[Future[Children]] = {
-    when(taxCreditBrokerConnector.getChildren(any[TaxCreditsNino]())(any[HeaderCarrier](), any[ExecutionContext]())).thenReturn(response)
-  }
+  def mockTaxCreditBrokerConnectorGetChildren(response: Children, nino: TaxCreditsNino)(implicit taxCreditBrokerConnector: TaxCreditsBrokerConnector): Unit =
+    (taxCreditBrokerConnector.getChildren(_: TaxCreditsNino)(_: HeaderCarrier, _: ExecutionContext)).expects(nino, *, *).returning(Future successful response)
 
-  def stubTaxCreditBrokerConnectorGetExclusion(response: Exclusion)(implicit taxCreditBrokerConnector: TaxCreditsBrokerConnector): OngoingStubbing[Future[Exclusion]] = {
-    when(taxCreditBrokerConnector.getExclusion(any[TaxCreditsNino]())(any[HeaderCarrier](), any[ExecutionContext]())).thenReturn(response)
-  }
+  def mockTaxCreditBrokerConnectorGetChildrenFailure(response: Exception, nino: TaxCreditsNino)(implicit taxCreditBrokerConnector: TaxCreditsBrokerConnector): Unit =
+    (taxCreditBrokerConnector.getChildren(_: TaxCreditsNino)(_: HeaderCarrier, _: ExecutionContext)).expects(nino, *, *).returning(Future failed response)
 
-  def stubTaxCreditBrokerConnectorGetPartnerDetails(response: Option[PartnerDetails])(implicit taxCreditBrokerConnector: TaxCreditsBrokerConnector): OngoingStubbing[Future[Option[PartnerDetails]]] = {
-    when(taxCreditBrokerConnector.getPartnerDetails(any[TaxCreditsNino]())(any[HeaderCarrier](), any[ExecutionContext]())).thenReturn(response)
-  }
+  def mockTaxCreditBrokerConnectorGetExclusion(response: Exclusion, nino: TaxCreditsNino)(implicit taxCreditBrokerConnector: TaxCreditsBrokerConnector): Unit =
+    (taxCreditBrokerConnector.getExclusion(_: TaxCreditsNino)(_: HeaderCarrier, _: ExecutionContext)).expects(nino, *, *).returning(Future successful response)
 
-  def stubTaxCreditBrokerConnectorGetPersonalDetails(response: PersonalDetails)(implicit taxCreditBrokerConnector: TaxCreditsBrokerConnector): OngoingStubbing[Future[PersonalDetails]] = {
-    when(taxCreditBrokerConnector.getPersonalDetails(any[TaxCreditsNino]())(any[HeaderCarrier](), any[ExecutionContext]())).thenReturn(response)
-  }
+  def mockTaxCreditBrokerConnectorGetExclusionFailure(response: Exception, nino: TaxCreditsNino)(implicit taxCreditBrokerConnector: TaxCreditsBrokerConnector): Unit =
+    (taxCreditBrokerConnector.getExclusion(_: TaxCreditsNino)(_: HeaderCarrier, _: ExecutionContext)).expects(nino, *, *).returning(Future failed response)
 
-  def stubTaxCreditBrokerConnectorGetPaymentSummary(response: PaymentSummary)(implicit taxCreditBrokerConnector: TaxCreditsBrokerConnector): OngoingStubbing[Future[PaymentSummary]] = {
-    when(taxCreditBrokerConnector.getPaymentSummary(any[TaxCreditsNino]())(any[HeaderCarrier](), any[ExecutionContext]())).thenReturn(response)
-  }
+  def mockTaxCreditBrokerConnectorGetPartnerDetails(response: Option[PartnerDetails], nino: TaxCreditsNino)(implicit taxCreditBrokerConnector: TaxCreditsBrokerConnector): Unit =
+    (taxCreditBrokerConnector.getPartnerDetails(_: TaxCreditsNino)(_: HeaderCarrier, _: ExecutionContext)).expects(nino, *, *).returning(Future successful response)
+
+  def mockTaxCreditBrokerConnectorGetPersonalDetails(response: PersonalDetails, nino: TaxCreditsNino)(implicit taxCreditBrokerConnector: TaxCreditsBrokerConnector): Unit =
+    (taxCreditBrokerConnector.getPersonalDetails(_: TaxCreditsNino)(_: HeaderCarrier, _: ExecutionContext)).expects(nino, *, *).returning(Future successful response)
+
+  def mockTaxCreditBrokerConnectorGetPaymentSummary(response: PaymentSummary, nino: TaxCreditsNino)(implicit taxCreditBrokerConnector: TaxCreditsBrokerConnector): Unit =
+    (taxCreditBrokerConnector.getPaymentSummary(_: TaxCreditsNino)(_: HeaderCarrier, _: ExecutionContext)).expects(nino, *, *).returning(Future successful response)
 
 }

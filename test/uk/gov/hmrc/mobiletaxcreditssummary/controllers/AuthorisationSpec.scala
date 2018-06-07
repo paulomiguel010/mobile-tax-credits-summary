@@ -35,32 +35,32 @@ class AuthorisationSpec extends TestSetup {
   "Authorisation grantAccess" should {
 
     "successfully grant access when nino exists and confidence level is 200" in new mocks {
-      stubAuthorisationGrantAccess(Some(nino) and L200)
+      mockAuthorisationGrantAccess(Some(nino) and L200)
       val authority: Authority = await(authorisation(mockAuthConnector).grantAccess(Nino(nino)))
       authority.nino.value shouldBe nino
     }
 
     "error with unauthorised when account has low CL" in new mocks {
-      stubAuthorisationGrantAccess(Some(nino) and L100)
+      mockAuthorisationGrantAccess(Some(nino) and L100)
       intercept[AccountWithLowCL] {
         await(authorisation(mockAuthConnector).grantAccess(Nino(nino)))
       }
     }
 
     "fail to return authority when no NINO exists" in new mocks {
-      stubAuthorisationGrantAccess(None and L200)
+      mockAuthorisationGrantAccess(None and L200)
       intercept[NinoNotFoundOnAccount] {
         await(authorisation(mockAuthConnector).grantAccess(Nino(nino)))
       }
 
-      stubAuthorisationGrantAccess(Some("") and L200)
+      mockAuthorisationGrantAccess(Some("") and L200)
       intercept[NinoNotFoundOnAccount] {
         await(authorisation(mockAuthConnector).grantAccess(Nino(nino)))
       }
     }
 
     "fail to return authority when auth NINO does not match request NINO" in new mocks {
-      stubAuthorisationGrantAccess(Some(nino) and L200)
+      mockAuthorisationGrantAccess(Some(nino) and L200)
       intercept[FailToMatchTaxIdOnAuth] {
         await(authorisation(mockAuthConnector).grantAccess(incorrectNino))
       }
