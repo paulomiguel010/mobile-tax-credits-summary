@@ -22,12 +22,13 @@ import play.api.libs.json.Json
 import play.api.libs.json.Json.toJson
 import play.api.mvc._
 import uk.gov.hmrc.api.controllers._
+import uk.gov.hmrc.api.sandbox.FileResource
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, NotFoundException, ServiceUnavailableException}
 import uk.gov.hmrc.mobiletaxcreditssummary.controllers.action.AccessControl
 import uk.gov.hmrc.mobiletaxcreditssummary.domain.userdata._
-import uk.gov.hmrc.mobiletaxcreditssummary.services.{LiveTaxCreditsSummaryService, SandboxTaxCreditsSummaryService, TaxCreditsSummaryService}
+import uk.gov.hmrc.mobiletaxcreditssummary.services.LiveTaxCreditsSummaryService
 import uk.gov.hmrc.play.HeaderCarrierConverter.fromHeadersAndSession
 import uk.gov.hmrc.play.bootstrap.controller.BaseController
 
@@ -56,11 +57,36 @@ trait ErrorHandling {
   }
 }
 
-trait TaxCreditsSummaryController extends BaseController with AccessControl with ErrorHandling {
+trait TaxCreditsSummaryController extends BaseController {
 
-  val service: TaxCreditsSummaryService
+  def taxCreditsSummary(nino: Nino, journeyId: Option[String] = None): Action[AnyContent]
 
-  final def taxCreditsSummary(nino: Nino, journeyId: Option[String] = None): Action[AnyContent] =
+}
+
+@Singleton
+class SandboxTaxCreditsSummaryController() extends TaxCreditsSummaryController with FileResource {
+  override final def taxCreditsSummary(nino: Nino, journeyId: Option[String] = None): Action[AnyContent] = Action.async {
+    implicit request =>
+      Future successful (request.headers.get("SANDBOX-CONTROL") match {
+        case Some("NON-TAX-CREDIT-USER") => Ok(toJson(TaxCreditSummaryResponse(taxCreditSummary = None)))
+        case Some("EXCLUDED-TAX-CREDIT-USER") => Ok(toJson(TaxCreditSummaryResponse(excluded = true, taxCreditSummary = None)))
+        case Some("ERROR-401") => Unauthorized
+        case Some("ERROR-403") => Forbidden
+        case Some("ERROR-500") => InternalServerError
+        case _ => //TAX-CREDIT-USER
+          val resource: String = findResource(s"/resources/taxcreditsummary/${nino.value}.json").getOrElse(throw new IllegalArgumentException("Resource not found!"))
+          val response = TaxCreditSummaryResponse(excluded = false, Some(Json.parse(resource).as[TaxCreditSummary]))
+          Ok(toJson(response))
+      })
+  }
+}
+
+@Singleton
+class LiveTaxCreditsSummaryController @Inject()(override val authConnector: AuthConnector,
+                                                @Named("controllers.confidenceLevel") override val confLevel: Int,
+                                                val service: LiveTaxCreditsSummaryService) extends TaxCreditsSummaryController with AccessControl with ErrorHandling {
+
+  override final def taxCreditsSummary(nino: Nino, journeyId: Option[String] = None): Action[AnyContent] =
     validateAcceptWithAuth(acceptHeaderValidationRules, Option(nino)).async {
       implicit request =>
         implicit val hc: HeaderCarrier = fromHeadersAndSession(request.headers, None)
@@ -71,18 +97,4 @@ trait TaxCreditsSummaryController extends BaseController with AccessControl with
           }
         }
     }
-
 }
-
-@Singleton
-class SandboxTaxCreditsSummaryController @Inject()(override val authConnector: AuthConnector,
-                                                   @Named("controllers.confidenceLevel") override val confLevel: Int)
-  extends TaxCreditsSummaryController {
-  override lazy val requiresAuth: Boolean = false
-  override val service: SandboxTaxCreditsSummaryService.type = SandboxTaxCreditsSummaryService
-}
-
-@Singleton
-class LiveTaxCreditsSummaryController @Inject()(override val authConnector: AuthConnector,
-                                                @Named("controllers.confidenceLevel") override val confLevel: Int,
-                                                override val service: LiveTaxCreditsSummaryService) extends TaxCreditsSummaryController

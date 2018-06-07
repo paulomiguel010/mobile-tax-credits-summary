@@ -25,6 +25,21 @@ All the above endpoints are accessible on sandbox with `/sandbox` prefix on each
     GET /sandbox/income/:nino/tax-credits/tax-credits-summary
 ```
 
+To trigger the sandbox endpoints locally, use the "X-MOBILE-USER" header with one of the following values:
+208606423740 or 167927702220
+
+To test different scenarios, add a header "SANDBOX-CONTROL" with one of the following values:
+
+| *Value* | *Description* |
+|--------|----|
+| "TAX-CREDIT-USER" | Happy path, non-excluded Tax Credits Users |
+| "NON-TAX-CREDIT-USER" | Unhappy path, non-excluded, Non Tax Credits Users |
+| "EXCLUDED-TAX-CREDIT-USER" | Unhappy path, excluded, Non Tax Credits Users |
+| "ERROR-401" | Unhappy path, trigger a 401 Unauthorized response |
+| "ERROR-403" | Unhappy path, trigger a 403 Forbidden response |
+| "ERROR-500" | Unhappy path, trigger a 500 Internal Server Error response |
+| Not set or any other value | Happy path, non-excluded Tax Credits Users |
+
 # Definition
 API definition for the service will be available under `/api/definition` endpoint.
 See definition in `/conf/api-definition.json` for the format.

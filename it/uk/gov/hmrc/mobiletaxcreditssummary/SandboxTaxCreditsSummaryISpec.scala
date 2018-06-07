@@ -33,39 +33,46 @@ class SandboxTaxCreditsSummaryISpec extends BaseISpec with FileResource {
         (response.json \ "taxCreditSummary").get
       }
 
-    "return excluded = false and a tax credit summary" in {
+    "return excluded = false and a tax credit summary where no SANDBOX-CONTROL header is set" in {
       val response = await(request(sandboxNino).withHeaders(mobileHeader).get())
       response.status shouldBe 200
       (response.json \ "excluded").as[Boolean] shouldBe false
       (response.json \ "taxCreditSummary" \ "paymentSummary" \ "workingTaxCredit" \ "paymentFrequency").as[String] shouldBe "weekly"
     }
 
-    "return excluded = true and no tax credit summary data if excluded" in {
-      val response = await(request(sandboxNino).withHeaders(mobileHeader).get())
+    "return excluded = false and a tax credit summary where SANDBOX-CONTROL is any other value" in {
+      val response = await(request(sandboxNino).withHeaders(mobileHeader, "SANDBOX-CONTROL" -> "RANDOMVALUE").get())
+      response.status shouldBe 200
+      (response.json \ "excluded").as[Boolean] shouldBe false
+      (response.json \ "taxCreditSummary" \ "paymentSummary" \ "workingTaxCredit" \ "paymentFrequency").as[String] shouldBe "weekly"
+    }
+
+    "return excluded = true and no tax credit summary data if excluded where SANDBOX-CONTROL is EXCLUDED-TAX-CREDIT-USER" in {
+      val response = await(request(sandboxNino).withHeaders(mobileHeader, "SANDBOX-CONTROL" -> "EXCLUDED-TAX-CREDIT-USER").get())
       response.status shouldBe 200
       (response.json \ "excluded").as[Boolean] shouldBe true
       assertEmptyTaxCreditSummary(response)
     }
 
-    "return excluded = false and no tax credit summary data if non tax credit user" in {
-      val response = await(request(sandboxNino).withHeaders(mobileHeader).get())
+    "return excluded = false and no tax credit summary data if non tax credit user where SANDBOX-CONTROL is NON-TAX-CREDIT-USER" in {
+      val response = await(request(sandboxNino).withHeaders(mobileHeader, "SANDBOX-CONTROL" -> "NON-TAX-CREDIT-USER").get())
       response.status shouldBe 200
       (response.json \ "excluded").as[Boolean] shouldBe false
       assertEmptyTaxCreditSummary(response)
     }
 
-    "return 401 if unauthenticated" in {
-      val response = await(request(sandboxNino).withHeaders(mobileHeader).get())
+    "return 401 if unauthenticated where SANDBOX-CONTROL is ERROR-401" in {
+      val response = await(request(sandboxNino).withHeaders(mobileHeader, "SANDBOX-CONTROL" -> "ERROR-401").get())
       response.status shouldBe 401
     }
 
-    "return 403 if forbidden" in {
-      val response = await(request(sandboxNino).withHeaders(mobileHeader).get())
+    "return 403 if forbidden where SANDBOX-CONTROL is ERROR-403" in {
+      val response = await(request(sandboxNino).withHeaders(mobileHeader, "SANDBOX-CONTROL" -> "ERROR-403").get())
       response.status shouldBe 403
     }
 
-    "return 500 if there is an error" in {
-      val response = await(request(sandboxNino).withHeaders(mobileHeader).get())
+    "return 500 if there is an error where SANDBOX-CONTROL is ERROR-500" in {
+      val response = await(request(sandboxNino).withHeaders(mobileHeader, "SANDBOX-CONTROL" -> "ERROR-500").get())
       response.status shouldBe 500
     }
   }
