@@ -1,6 +1,6 @@
 {
   "excluded": false,
-  "taxCreditSummary": {
+  "taxCreditsSummary": {
     "paymentSummary": {
       "workingTaxCredit": {
         "paymentSeq": [

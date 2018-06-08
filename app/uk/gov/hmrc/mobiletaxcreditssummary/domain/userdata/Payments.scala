@@ -19,7 +19,7 @@ package uk.gov.hmrc.mobiletaxcreditssummary.domain.userdata
 import org.joda.time.DateTime
 import play.api.libs.functional.FunctionalBuilder
 import play.api.libs.functional.syntax._
-import play.api.libs.json.{__, _}
+import play.api.libs.json._
 import uk.gov.hmrc.mobiletaxcreditssummary.domain.userdata.PaymentReadWriteUtils.{paymentReads, paymentWrites}
 
 case class PaymentSummary(

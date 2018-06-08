@@ -29,10 +29,7 @@ import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import scala.concurrent.{ExecutionContext, Future}
 
 trait TaxCreditsSummaryService {
-
-  def getTaxCreditExclusion(nino: Nino)(implicit hc: HeaderCarrier, ex: ExecutionContext): Future[Exclusion]
-
-  def getTaxCreditSummary(nino: Nino)(implicit hc: HeaderCarrier, ex: ExecutionContext): Future[TaxCreditSummary]
+  def getTaxCreditsSummaryResponse(nino: Nino)(implicit hc: HeaderCarrier, ex: ExecutionContext): Future[TaxCreditsSummaryResponse]
 }
 
 @Singleton
@@ -40,17 +37,10 @@ class LiveTaxCreditsSummaryService @Inject()(taxCreditsBrokerConnector: TaxCredi
                                              val auditConnector: AuditConnector,
                                              val appNameConfiguration: Configuration) extends TaxCreditsSummaryService with Auditor {
 
-  override def getTaxCreditExclusion(nino: Nino)(implicit hc: HeaderCarrier, ex: ExecutionContext): Future[Exclusion] = {
-    withAudit("getTaxCreditExclusion", Map("nino" -> nino.value)) {
-      taxCreditsBrokerConnector.getExclusion(TaxCreditsNino(nino.value))
-    }
-  }
+  override def getTaxCreditsSummaryResponse(nino: Nino)(implicit hc: HeaderCarrier, ex: ExecutionContext): Future[TaxCreditsSummaryResponse] = {
+    val tcNino = TaxCreditsNino(nino.value)
 
-  override def getTaxCreditSummary(nino: Nino)(implicit hc: HeaderCarrier, ex: ExecutionContext): Future[TaxCreditSummary] = {
-    withAudit("getTaxCreditSummary", Map("nino" -> nino.value)) {
-
-      val tcNino = TaxCreditsNino(nino.value)
-
+    def buildTaxCreditsSummary(paymentSummary: PaymentSummary): Future[TaxCreditsSummaryResponse] = {
       def getChildrenAge16AndUnder: Future[Children] = {
         taxCreditsBrokerConnector.getChildren(tcNino).map(children =>
           Children(Child.getEligibleChildren(children)))
@@ -58,15 +48,41 @@ class LiveTaxCreditsSummaryService @Inject()(taxCreditsBrokerConnector: TaxCredi
 
       val childrenFuture = getChildrenAge16AndUnder
       val partnerDetailsFuture = taxCreditsBrokerConnector.getPartnerDetails(tcNino)
-      val paymentSummaryFuture = taxCreditsBrokerConnector.getPaymentSummary(tcNino)
       val personalDetailsFuture = taxCreditsBrokerConnector.getPersonalDetails(tcNino)
 
       for {
         children <- childrenFuture
         partnerDetails <- partnerDetailsFuture
-        paymentSummary <- paymentSummaryFuture
         personalDetails <- personalDetailsFuture
-      } yield TaxCreditSummary(paymentSummary, personalDetails, partnerDetails, children)
+      } yield TaxCreditsSummaryResponse(false, Some(TaxCreditsSummary(paymentSummary, personalDetails, partnerDetails, children)))
+    }
+
+    def buildResponseFromPaymentSummary: Future[TaxCreditsSummaryResponse] = {
+      withAudit("getTaxCreditSummary", Map("nino" -> nino.value)) {
+        taxCreditsBrokerConnector.getPaymentSummary(tcNino).flatMap { summary =>
+          if (summary.excluded.getOrElse(false)) {
+            // in the context of getPaymentSummary, 'excluded == true' means a non-tax credits user
+            Future successful TaxCreditsSummaryResponse(excluded = false, None)
+          }
+          else {
+            buildTaxCreditsSummary(summary)
+          }
+        }
+      }
+    }
+
+    def exclusion: Future[TaxCreditsSummaryResponse] = {
+      withAudit("getTaxCreditExclusion", Map("nino" -> nino.value)) {
+        taxCreditsBrokerConnector.getExclusion(tcNino).map(
+          exclusion =>
+            if (exclusion.excluded) TaxCreditsSummaryResponse(excluded = true, None)
+            else throw new IllegalStateException("payment summary call failed but user not excluded")
+        )
+      }
+    }
+
+    buildResponseFromPaymentSummary.recoverWith{
+      case _ => exclusion
     }
   }
 }

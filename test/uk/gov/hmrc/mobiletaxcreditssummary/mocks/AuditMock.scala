@@ -48,10 +48,10 @@ trait AuditMock extends MockFactory {
         Map("nino" -> nino.value)), *, * ).returning(Future successful Success)
   }
 
-  def mockAuditGetTaxCreditExclusion(nino: Nino)(implicit auditConnector: AuditConnector): Unit =
+  def mockAuditGetTaxCreditsExclusion(nino: Nino)(implicit auditConnector: AuditConnector): Unit =
     mockAudit(nino, "getTaxCreditExclusion")
 
-  def mockAuditGetTaxCreditSummary(nino: Nino)(implicit auditConnector: AuditConnector): Unit =
+  def mockAuditGetTaxCreditsSummary(nino: Nino)(implicit auditConnector: AuditConnector): Unit =
     mockAudit(nino, "getTaxCreditSummary")
 
 }

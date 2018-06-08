@@ -28,37 +28,37 @@ class SandboxTaxCreditsSummaryISpec extends BaseISpec with FileResource {
   "GET /sandbox/income/:nino/tax-credits/tax-credits-summary " should {
     def request(nino: Nino): WSRequest = wsUrl(s"/income/${nino.value}/tax-credits/tax-credits-summary").withHeaders(acceptJsonHeader)
 
-    def assertEmptyTaxCreditSummary(response: WSResponse): RuntimeException =
+    def assertEmptyTaxCreditsSummary(response: WSResponse): RuntimeException =
       intercept[RuntimeException] {
-        (response.json \ "taxCreditSummary").get
+        (response.json \ "taxCreditsSummary").get
       }
 
     "return excluded = false and a tax credit summary where no SANDBOX-CONTROL header is set" in {
       val response = await(request(sandboxNino).withHeaders(mobileHeader).get())
       response.status shouldBe 200
       (response.json \ "excluded").as[Boolean] shouldBe false
-      (response.json \ "taxCreditSummary" \ "paymentSummary" \ "workingTaxCredit" \ "paymentFrequency").as[String] shouldBe "weekly"
+      (response.json \ "taxCreditsSummary" \ "paymentSummary" \ "workingTaxCredit" \ "paymentFrequency").as[String] shouldBe "weekly"
     }
 
     "return excluded = false and a tax credit summary where SANDBOX-CONTROL is any other value" in {
       val response = await(request(sandboxNino).withHeaders(mobileHeader, "SANDBOX-CONTROL" -> "RANDOMVALUE").get())
       response.status shouldBe 200
       (response.json \ "excluded").as[Boolean] shouldBe false
-      (response.json \ "taxCreditSummary" \ "paymentSummary" \ "workingTaxCredit" \ "paymentFrequency").as[String] shouldBe "weekly"
+      (response.json \ "taxCreditsSummary" \ "paymentSummary" \ "workingTaxCredit" \ "paymentFrequency").as[String] shouldBe "weekly"
     }
 
-    "return excluded = true and no tax credit summary data if excluded where SANDBOX-CONTROL is EXCLUDED-TAX-CREDIT-USER" in {
-      val response = await(request(sandboxNino).withHeaders(mobileHeader, "SANDBOX-CONTROL" -> "EXCLUDED-TAX-CREDIT-USER").get())
+    "return excluded = true and no tax credit summary data if excluded where SANDBOX-CONTROL is EXCLUDED-TAX-CREDITS-USER" in {
+      val response = await(request(sandboxNino).withHeaders(mobileHeader, "SANDBOX-CONTROL" -> "EXCLUDED-TAX-CREDITS-USER").get())
       response.status shouldBe 200
       (response.json \ "excluded").as[Boolean] shouldBe true
-      assertEmptyTaxCreditSummary(response)
+      assertEmptyTaxCreditsSummary(response)
     }
 
-    "return excluded = false and no tax credit summary data if non tax credit user where SANDBOX-CONTROL is NON-TAX-CREDIT-USER" in {
-      val response = await(request(sandboxNino).withHeaders(mobileHeader, "SANDBOX-CONTROL" -> "NON-TAX-CREDIT-USER").get())
+    "return excluded = false and no tax credit summary data if non tax credit user where SANDBOX-CONTROL is NON-TAX-CREDITS-USER" in {
+      val response = await(request(sandboxNino).withHeaders(mobileHeader, "SANDBOX-CONTROL" -> "NON-TAX-CREDITS-USER").get())
       response.status shouldBe 200
       (response.json \ "excluded").as[Boolean] shouldBe false
-      assertEmptyTaxCreditSummary(response)
+      assertEmptyTaxCreditsSummary(response)
     }
 
     "return 401 if unauthenticated where SANDBOX-CONTROL is ERROR-401" in {
