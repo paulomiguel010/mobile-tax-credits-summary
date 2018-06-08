@@ -68,14 +68,14 @@ class SandboxTaxCreditsSummaryController() extends TaxCreditsSummaryController w
   override final def taxCreditsSummary(nino: Nino, journeyId: Option[String] = None): Action[AnyContent] = Action.async {
     implicit request =>
       Future successful (request.headers.get("SANDBOX-CONTROL") match {
-        case Some("NON-TAX-CREDIT-USER") => Ok(toJson(TaxCreditSummaryResponse(taxCreditSummary = None)))
-        case Some("EXCLUDED-TAX-CREDIT-USER") => Ok(toJson(TaxCreditSummaryResponse(excluded = true, taxCreditSummary = None)))
+        case Some("NON-TAX-CREDITS-USER") => Ok(toJson(TaxCreditsSummaryResponse(taxCreditsSummary = None)))
+        case Some("EXCLUDED-TAX-CREDITS-USER") => Ok(toJson(TaxCreditsSummaryResponse(excluded = true, taxCreditsSummary = None)))
         case Some("ERROR-401") => Unauthorized
         case Some("ERROR-403") => Forbidden
         case Some("ERROR-500") => InternalServerError
-        case _ => //TAX-CREDIT-USER
-          val resource: String = findResource(s"/resources/taxcreditsummary/${nino.value}.json").getOrElse(throw new IllegalArgumentException("Resource not found!"))
-          val response = TaxCreditSummaryResponse(excluded = false, Some(Json.parse(resource).as[TaxCreditSummary]))
+        case _ => //TAX-CREDITS-USER
+          val resource: String = findResource(s"/resources/taxcreditssummary/${nino.value}.json").getOrElse(throw new IllegalArgumentException("Resource not found!"))
+          val response = TaxCreditsSummaryResponse(excluded = false, Some(Json.parse(resource).as[TaxCreditsSummary]))
           Ok(toJson(response))
       })
   }
@@ -91,9 +91,8 @@ class LiveTaxCreditsSummaryController @Inject()(override val authConnector: Auth
       implicit request =>
         implicit val hc: HeaderCarrier = fromHeadersAndSession(request.headers, None)
         errorWrapper {
-          service.getTaxCreditExclusion(nino).flatMap { res =>
-            if (res.excluded) Future successful Ok(toJson(TaxCreditSummaryResponse(excluded = true, taxCreditSummary = None)))
-            else service.getTaxCreditSummary(nino).map(summary => Ok(toJson(TaxCreditSummaryResponse(taxCreditSummary = Some(summary)))))
+          service.getTaxCreditsSummaryResponse(nino).map{ summary =>
+            Ok(toJson(summary))
           }
         }
     }

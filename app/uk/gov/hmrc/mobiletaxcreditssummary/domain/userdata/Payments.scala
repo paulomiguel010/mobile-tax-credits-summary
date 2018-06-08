@@ -22,7 +22,10 @@ import play.api.libs.functional.syntax._
 import play.api.libs.json._
 import uk.gov.hmrc.mobiletaxcreditssummary.domain.userdata.PaymentReadWriteUtils.{paymentReads, paymentWrites}
 
-case class PaymentSummary(workingTaxCredit: Option[PaymentSection], childTaxCredit: Option[PaymentSection], paymentEnabled: Boolean, specialCircumstances: Option[String] = None) {
+case class PaymentSummary(
+  workingTaxCredit: Option[PaymentSection], childTaxCredit: Option[PaymentSection],
+  paymentEnabled: Option[Boolean] = Some(false), specialCircumstances: Option[String] = None,
+  excluded: Option[Boolean] = None) {
 
   def informationMessage: Option[String] = {
     if (specialCircumstances.isDefined)
@@ -139,8 +142,9 @@ object PaymentSummary {
   implicit val reads: Reads[PaymentSummary] = (
     (JsPath \ "workingTaxCredit").readNullable[PaymentSection] and
       (JsPath \ "childTaxCredit").readNullable[PaymentSection] and
-      (JsPath \ "paymentEnabled").read[Boolean] and
-      (JsPath \ "specialCircumstances").readNullable[String]
+      (JsPath \ "paymentEnabled").readNullable[Boolean] and
+      (JsPath \ "specialCircumstances").readNullable[String] and
+      (JsPath \ "excluded").readNullable[Boolean]
     ) (PaymentSummary.apply _)
 
   implicit val writes: Writes[PaymentSummary] = new Writes[PaymentSummary] {
@@ -149,17 +153,17 @@ object PaymentSummary {
       val paymentSummaryWrites = (
         (__ \ "workingTaxCredit").writeNullable[PaymentSection] ~
           (__ \ "childTaxCredit").writeNullable[PaymentSection] ~
-          (__ \ "paymentEnabled").write[Boolean] ~
-          (__ \ "specialCircumstances").writeNullable[String] ~
+          (__ \ "paymentEnabled").writeNullable[Boolean] ~
+          (__ \ "specialCircumstances").writeNullable[String]  ~
+          (__ \ "excluded").writeNullable[Boolean] ~
           (__ \ "informationMessage").writeNullable[String] ~
           (__ \ "totalsByDate").writeNullable[List[Total]] ~
           (__ \ "previousTotalsByDate").writeNullable[List[Total]]
         ).tupled
 
-      paymentSummaryWrites.writes((paymentSummary.workingTaxCredit,
-        paymentSummary.childTaxCredit, paymentSummary.paymentEnabled,
-        paymentSummary.specialCircumstances, paymentSummary.informationMessage,
-        paymentSummary.totalsByDate, paymentSummary.previousTotalsByDate))
+      paymentSummaryWrites.writes((paymentSummary.workingTaxCredit, paymentSummary.childTaxCredit,
+        paymentSummary.paymentEnabled, paymentSummary.specialCircumstances, paymentSummary.excluded,
+        paymentSummary.informationMessage, paymentSummary.totalsByDate, paymentSummary.previousTotalsByDate))
     }
   }
 

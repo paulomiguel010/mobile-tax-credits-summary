@@ -65,7 +65,7 @@ class PaymentSummarySpec extends UnitSpec with WithFakeApplication {
         case success: JsSuccess[PaymentSummary] =>
           success.get
       }
-      paymentSummary.paymentEnabled shouldBe true
+      paymentSummary.paymentEnabled.get shouldBe true
       paymentSummary.childTaxCredit shouldBe None
       paymentSummary.workingTaxCredit shouldBe None
       paymentSummary.totalsByDate.isDefined shouldBe false
@@ -101,7 +101,7 @@ class PaymentSummarySpec extends UnitSpec with WithFakeApplication {
         case success: JsSuccess[PaymentSummary] =>
           success.get
       }
-      paymentSummary.paymentEnabled shouldBe true
+      paymentSummary.paymentEnabled.get shouldBe true
       paymentSummary.childTaxCredit.isDefined shouldBe true
       paymentSummary.workingTaxCredit.isDefined shouldBe false
       paymentSummary.totalsByDate.isDefined shouldBe true
@@ -138,7 +138,7 @@ class PaymentSummarySpec extends UnitSpec with WithFakeApplication {
         case success: JsSuccess[PaymentSummary] =>
           success.get
       }
-      paymentSummary.paymentEnabled shouldBe true
+      paymentSummary.paymentEnabled.get shouldBe true
       paymentSummary.childTaxCredit.isDefined shouldBe false
       paymentSummary.workingTaxCredit.isDefined shouldBe true
       paymentSummary.totalsByDate.isEmpty shouldBe false
@@ -188,7 +188,7 @@ class PaymentSummarySpec extends UnitSpec with WithFakeApplication {
         case success: JsSuccess[PaymentSummary] =>
           success.get
       }
-      paymentSummary.paymentEnabled shouldBe true
+      paymentSummary.paymentEnabled.get shouldBe true
       paymentSummary.childTaxCredit.isDefined shouldBe true
       paymentSummary.workingTaxCredit.isDefined shouldBe true
       paymentSummary.totalsByDate.isDefined shouldBe true
@@ -251,7 +251,7 @@ class PaymentSummarySpec extends UnitSpec with WithFakeApplication {
         case success: JsSuccess[PaymentSummary] =>
           success.get
       }
-      paymentSummary.paymentEnabled shouldBe true
+      paymentSummary.paymentEnabled.get shouldBe true
       paymentSummary.childTaxCredit.isDefined shouldBe true
       paymentSummary.workingTaxCredit.isDefined shouldBe true
       paymentSummary.totalsByDate.isDefined shouldBe true
@@ -314,7 +314,7 @@ class PaymentSummarySpec extends UnitSpec with WithFakeApplication {
         case success: JsSuccess[PaymentSummary] =>
           success.get
       }
-      paymentSummary.paymentEnabled shouldBe true
+      paymentSummary.paymentEnabled.get shouldBe true
       paymentSummary.childTaxCredit.isDefined shouldBe true
       paymentSummary.workingTaxCredit.isDefined shouldBe true
       paymentSummary.totalsByDate.isDefined shouldBe true
@@ -395,7 +395,7 @@ class PaymentSummarySpec extends UnitSpec with WithFakeApplication {
         case success: JsSuccess[PaymentSummary] =>
           success.get
       }
-      paymentSummary.paymentEnabled shouldBe true
+      paymentSummary.paymentEnabled.get shouldBe true
       paymentSummary.childTaxCredit.isDefined shouldBe true
       paymentSummary.workingTaxCredit.isDefined shouldBe true
       paymentSummary.totalsByDate.isDefined shouldBe true
@@ -449,7 +449,7 @@ class PaymentSummarySpec extends UnitSpec with WithFakeApplication {
       case success: JsSuccess[PaymentSummary] =>
         success.get
     }
-    paymentSummary.paymentEnabled shouldBe true
+    paymentSummary.paymentEnabled.get shouldBe true
     paymentSummary.childTaxCredit.isDefined shouldBe true
     paymentSummary.workingTaxCredit.isDefined shouldBe true
     paymentSummary.informationMessage.isDefined shouldBe true

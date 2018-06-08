@@ -35,7 +35,7 @@ import uk.gov.hmrc.play.test.{UnitSpec, WithFakeApplication}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class TaxCreditBrokerSpec extends UnitSpec with ScalaFutures with WithFakeApplication with CircuitBreakerTest {
+class TaxCreditsBrokerSpec extends UnitSpec with ScalaFutures with WithFakeApplication with CircuitBreakerTest {
 
   trait Setup extends MockFactory {
     implicit lazy val hc: HeaderCarrier = HeaderCarrier()
@@ -46,7 +46,8 @@ class TaxCreditBrokerSpec extends UnitSpec with ScalaFutures with WithFakeApplic
     val expectedPaymentCTC = FuturePayment(140.12, expectedNextDueDate, oneOffPayment = false)
     val paymentSectionCTC = PaymentSection(List(expectedPaymentCTC), "weekly")
     val paymentSectionWTC = PaymentSection(List(expectedPaymentWTC), "weekly")
-    val paymentSummary = PaymentSummary(Some(paymentSectionWTC), Some(paymentSectionCTC), paymentEnabled = true)
+    val paymentSummary = PaymentSummary(Some(paymentSectionWTC), Some(paymentSectionCTC), paymentEnabled = Some(true))
+    val exclusionPaymentSummary = PaymentSummary(None, None, None, None, excluded = Some(true))
 
 
     lazy val http500Response: Future[Nothing] = Future.failed(Upstream5xxResponse("Error", 500, 500))
@@ -112,7 +113,7 @@ class TaxCreditBrokerSpec extends UnitSpec with ScalaFutures with WithFakeApplic
     val connector: TaxCreditsBrokerConnector = TaxCreditsBrokerTestConnector(Some(response))
   }
 
-  "taxCreditBroker connector" should {
+  "taxCreditsBroker connector" should {
 
     "return a valid response for getPersonalDetails when a 200 response is received with a valid json payload" in new Setup {
       override lazy val response: Future[AnyRef with HttpResponse] = http200Person
@@ -138,19 +139,21 @@ class TaxCreditBrokerSpec extends UnitSpec with ScalaFutures with WithFakeApplic
       await(connector.getExclusion(TaxCreditsNino(nino.value))) shouldBe exclusion
     }
 
-
     "return a valid response for getPaymentSummary when a 200 response is received with a valid json payload" in new Setup {
       override lazy val response: Future[AnyRef with HttpResponse] = http200Payment
       val result: PaymentSummary = await(connector.getPaymentSummary(TaxCreditsNino(nino.value)))
       result shouldBe paymentSummary
     }
 
+    "return excluded payment summary response" in new Setup {
+      override lazy val response: Future[AnyRef with HttpResponse] = http200Exclusion
+      val result: PaymentSummary = await(connector.getPaymentSummary(TaxCreditsNino(nino.value)))
+      result shouldBe exclusionPaymentSummary
+    }
+
     "circuit breaker configuration should be applied and unhealthy service exception will kick in after 5th failed call" in new Setup {
       override lazy val response: Future[Nothing] = http500Response
       executeCB(connector.getPaymentSummary(TaxCreditsNino(nino.value)))
     }
-
-
   }
-
 }
