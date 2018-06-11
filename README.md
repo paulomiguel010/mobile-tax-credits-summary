@@ -38,6 +38,7 @@ To test different scenarios, add a header "SANDBOX-CONTROL" with one of the foll
 | "ERROR-401" | Unhappy path, trigger a 401 Unauthorized response |
 | "ERROR-403" | Unhappy path, trigger a 403 Forbidden response |
 | "ERROR-500" | Unhappy path, trigger a 500 Internal Server Error response |
+| "SHUTTERED" | Unhappy path, trigger a 503 Shuttered response |
 | Not set or any other value | Happy path, non-excluded Tax Credits Users |
 
 # Definition

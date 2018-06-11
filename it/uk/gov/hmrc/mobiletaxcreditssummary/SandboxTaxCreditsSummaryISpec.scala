@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.mobiletaxcreditssummary
 
+import play.api.libs.json.{JsArray, JsString}
 import play.api.libs.ws.{WSRequest, WSResponse}
 import uk.gov.hmrc.api.sandbox.FileResource
 import uk.gov.hmrc.domain.Nino
@@ -74,6 +75,20 @@ class SandboxTaxCreditsSummaryISpec extends BaseISpec with FileResource {
     "return 500 if there is an error where SANDBOX-CONTROL is ERROR-500" in {
       val response = await(request(sandboxNino).withHeaders(mobileHeader, "SANDBOX-CONTROL" -> "ERROR-500").get())
       response.status shouldBe 500
+    }
+
+    "return 503 and a shutter response where SANDBOX-CONTROL is SHUTTERED" in {
+      val response = await(request(sandboxNino).withHeaders(mobileHeader, "SANDBOX-CONTROL" -> "SHUTTERED").get())
+
+      response.status shouldBe 503
+
+      (response.json \ "shuttered").as[Boolean] shouldBe true
+      (response.json \ "title").as[String] shouldBe "This service is unavailable due to scheduled maintenance"
+
+      val messages: JsArray = (response.json \ "messages").as[JsArray]
+      messages.value.size shouldBe 2
+      messages(0).as[JsString].value shouldBe "We will be available from midnight, please try again then."
+      messages(1).as[JsString].value shouldBe "Go to GOV UK to <a href=“https://www.gov.uk“>manage your tax credits online</a>"
     }
   }
 }
