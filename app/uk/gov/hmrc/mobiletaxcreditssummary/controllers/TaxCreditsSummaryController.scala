@@ -74,7 +74,7 @@ trait TaxCreditsSummaryController extends BaseController {
 }
 
 @Singleton
-class SandboxTaxCreditsSummaryController() extends TaxCreditsSummaryController with FileResource {
+class SandboxTaxCreditsSummaryController() extends TaxCreditsSummaryController with FileResource with HeaderValidator {
   val shuttering =
     ConfiguredShuttering(
       shuttered = true,
@@ -83,21 +83,22 @@ class SandboxTaxCreditsSummaryController() extends TaxCreditsSummaryController w
         "You'll be able to use the app to manage your tax credits at 9am on Monday 29 May 2017.",
         "Go to GOV UK to <a href=“https://www.gov.uk“>manage your tax credits online</a>."))
 
-  override final def taxCreditsSummary(nino: Nino, journeyId: Option[String] = None): Action[AnyContent] = Action.async {
-    implicit request =>
-      Future successful (request.headers.get("SANDBOX-CONTROL") match {
-        case Some("NON-TAX-CREDITS-USER") => Ok(toJson(TaxCreditsSummaryResponse(taxCreditsSummary = None)))
-        case Some("EXCLUDED-TAX-CREDITS-USER") => Ok(toJson(TaxCreditsSummaryResponse(excluded = true, taxCreditsSummary = None)))
-        case Some("ERROR-401") => Unauthorized
-        case Some("ERROR-403") => Forbidden
-        case Some("ERROR-500") => InternalServerError
-        case Some("SHUTTERED") => ServiceUnavailable(toJson(shuttering))
-        case _ => //TAX-CREDITS-USER
-          val resource: String = findResource(s"/resources/taxcreditssummary/${nino.value}.json").getOrElse(throw new IllegalArgumentException("Resource not found!"))
-          val response = TaxCreditsSummaryResponse(excluded = false, Some(Json.parse(resource).as[TaxCreditsSummary]))
-          Ok(toJson(response))
-      })
-  }
+  override final def taxCreditsSummary(nino: Nino, journeyId: Option[String] = None): Action[AnyContent] =
+    validateAccept(acceptHeaderValidationRules).async {
+      implicit request =>
+        Future successful (request.headers.get("SANDBOX-CONTROL") match {
+          case Some("NON-TAX-CREDITS-USER") => Ok(toJson(TaxCreditsSummaryResponse(taxCreditsSummary = None)))
+          case Some("EXCLUDED-TAX-CREDITS-USER") => Ok(toJson(TaxCreditsSummaryResponse(excluded = true, taxCreditsSummary = None)))
+          case Some("ERROR-401") => Unauthorized
+          case Some("ERROR-403") => Forbidden
+          case Some("ERROR-500") => InternalServerError
+          case Some("SHUTTERED") => ServiceUnavailable(toJson(shuttering))
+          case _ => //TAX-CREDITS-USER
+            val resource: String = findResource(s"/resources/taxcreditssummary/${nino.value}.json").getOrElse(throw new IllegalArgumentException("Resource not found!"))
+            val response = TaxCreditsSummaryResponse(excluded = false, Some(Json.parse(resource).as[TaxCreditsSummary]))
+            Ok(toJson(response))
+        })
+    }
 }
 
 @Singleton
