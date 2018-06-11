@@ -41,6 +41,22 @@ To test different scenarios, add a header "SANDBOX-CONTROL" with one of the foll
 | "SHUTTERED" | Unhappy path, trigger a 503 Shuttered response |
 | Not set or any other value | Happy path, non-excluded Tax Credits Users |
 
+To start the service locally either use service-manager or clone this repo and use sbt to start:
+```
+ cd $WORKSPACE/tax-credits-summary
+ sbt start 
+```
+
+Once its running then to test the default behaviour (non-excluded Tax Credits Users payload):
+```
+curl -i localhost:8246/sandbox/income/CS700100A/tax-credits/tax-credits-summary
+```
+
+To test the shuttering behaviour:
+```
+curl -i -H"SANDBOX-CONTROL:SHUTTERED" localhost:8246/sandbox/income/CS700100A/tax-credits/tax-credits-summary
+```
+
 # Definition
 API definition for the service will be available under `/api/definition` endpoint.
 See definition in `/conf/api-definition.json` for the format.
