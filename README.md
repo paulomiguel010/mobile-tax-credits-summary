@@ -64,8 +64,4 @@ For more information, visit Confluence and see the following page:
 API definition for the service will be available under `/api/definition` endpoint.
 See definition in `/conf/api-definition.json` for the format.
 
-# Version
-Version of API need to be provided in `Accept` request header
-```
-Accept: application/vnd.hmrc.v1.0+json
-```
+
