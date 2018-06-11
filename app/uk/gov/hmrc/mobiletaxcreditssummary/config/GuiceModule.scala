@@ -18,18 +18,18 @@ package uk.gov.hmrc.mobiletaxcreditssummary.config
 
 import com.google.inject.name.Named
 import com.google.inject.name.Names.named
-import com.google.inject.{AbstractModule, Provides, TypeLiteral}
+import com.google.inject.{AbstractModule, Provides}
 import play.api.Mode.Mode
-import play.api.{Configuration, Environment, Logger, LoggerLike}
+import play.api.{Configuration, Environment}
 import uk.gov.hmrc.api.connector.ServiceLocatorConnector
 import uk.gov.hmrc.api.controllers.DocumentationController
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http.CoreGet
+import uk.gov.hmrc.mobiletaxcreditssummary.domain.{ConfiguredShuttering, Shuttering}
 import uk.gov.hmrc.mobiletaxcreditssummary.tasks.ServiceLocatorRegistrationTask
 import uk.gov.hmrc.play.bootstrap.auth.DefaultAuthConnector
 import uk.gov.hmrc.play.bootstrap.http.HttpClient
 import uk.gov.hmrc.play.config.{AppName, ServicesConfig}
-import java.util
 
 class GuiceModule(environment: Environment, configuration: Configuration) extends AbstractModule with ServicesConfig {
 
@@ -43,6 +43,8 @@ class GuiceModule(environment: Environment, configuration: Configuration) extend
     bind(classOf[HttpClient]).to(classOf[WSHttpImpl])
     bind(classOf[DocumentationController]).toInstance(DocumentationController)
     bind(classOf[ServiceLocatorRegistrationTask]).asEagerSingleton()
+
+    bindShuttering()
 
     bindConfigInt("controllers.confidenceLevel")
     bindConfigString("appUrl", "appUrl")
@@ -66,5 +68,18 @@ class GuiceModule(environment: Environment, configuration: Configuration) extend
   private def bindConfigString(name: String, path: String): Unit = {
     bindConstant().annotatedWith(named(name))
       .to(configuration.underlying.getString(path))
+  }
+
+  private def bindShuttering(): Unit = {
+    def getDecodedConfig(path: String) = Base64.decode(configuration.underlying.getString(path))
+
+    val shuttered = configuration.underlying.getBoolean("shuttering.shuttered")
+    val title = getDecodedConfig("shuttering.title")
+    val message1 = getDecodedConfig("shuttering.message1")
+    val message2 = getDecodedConfig("shuttering.message2")
+
+    val messages = if(message2.length < 1) Seq(message1) else Seq(message1, message2)
+
+    bind(classOf[Shuttering]).toInstance(ConfiguredShuttering(shuttered, title, messages))
   }
 }

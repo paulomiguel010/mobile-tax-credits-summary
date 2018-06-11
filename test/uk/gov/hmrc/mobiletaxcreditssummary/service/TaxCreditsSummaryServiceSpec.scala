@@ -50,8 +50,6 @@ class TaxCreditsSummaryServiceSpec extends TestSetup with WithFakeApplication wi
         Some(partnerDetails(nino)),
         Children(Seq(SarahSmith, JosephSmith, MarySmith)))))
 
-  implicit lazy val hc: HeaderCarrier = HeaderCarrier()
-
   "getTaxCreditsSummaryResponse" should{
     "return a non-tax-credits user payload when payment summary gives excluded = true " in {
       mockTaxCreditsBrokerConnectorGetPaymentSummary(exclusionPaymentSummary, taxCreditsNino)
