@@ -14,18 +14,11 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.mobiletaxcreditssummary.domain
+package uk.gov.hmrc.mobiletaxcreditssummary.mocks
 
-import play.api.libs.json.{Json, Writes}
+import org.scalamock.scalatest.MockFactory
+import uk.gov.hmrc.mobiletaxcreditssummary.domain.Shuttering
 
-trait Shuttering {
-  def shuttered: Boolean
-  def title: String
-  def messages: Seq[String]
-}
-
-case class ConfiguredShuttering(override val shuttered: Boolean, override val title: String, override val messages: Seq[String]) extends Shuttering
-
-object ConfiguredShuttering {
-  implicit val configuredShutteringWrites: Writes[ConfiguredShuttering] = Json.writes[ConfiguredShuttering]
+trait ShutteringMock extends MockFactory {
+  def mockNotShuttered()(implicit shuttering: Shuttering): Unit = (shuttering.shuttered _).expects().returning(false)
 }

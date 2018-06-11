@@ -14,18 +14,13 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.mobiletaxcreditssummary.domain
+package uk.gov.hmrc.mobiletaxcreditssummary.config
 
-import play.api.libs.json.{Json, Writes}
+import java.nio.charset.StandardCharsets.UTF_8
+import java.util.Base64.getDecoder
 
-trait Shuttering {
-  def shuttered: Boolean
-  def title: String
-  def messages: Seq[String]
-}
+object Base64 {
+  private val decoder = getDecoder
 
-case class ConfiguredShuttering(override val shuttered: Boolean, override val title: String, override val messages: Seq[String]) extends Shuttering
-
-object ConfiguredShuttering {
-  implicit val configuredShutteringWrites: Writes[ConfiguredShuttering] = Json.writes[ConfiguredShuttering]
+  def decode(encoded: String): String = new String(decoder.decode(encoded), UTF_8)
 }

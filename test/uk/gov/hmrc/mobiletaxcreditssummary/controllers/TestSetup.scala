@@ -27,22 +27,21 @@ import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.mobiletaxcreditssummary.connectors.TaxCreditsBrokerConnector
 import uk.gov.hmrc.mobiletaxcreditssummary.domain._
-import uk.gov.hmrc.mobiletaxcreditssummary.mocks.{AuditMock, AuthorisationMock, TaxCreditsBrokerConnectorMock}
+import uk.gov.hmrc.mobiletaxcreditssummary.mocks.{AuditMock, AuthorisationMock, ShutteringMock, TaxCreditsBrokerConnectorMock}
 import uk.gov.hmrc.mobiletaxcreditssummary.services.LiveTaxCreditsSummaryService
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.play.test.{UnitSpec, WithFakeApplication}
 
 trait TestSetup extends MockFactory with UnitSpec with WithFakeApplication
-  with TaxCreditsBrokerConnectorMock with AuthorisationMock with AuditMock {
+  with TaxCreditsBrokerConnectorMock with AuthorisationMock with AuditMock with ShutteringMock {
 
-  trait mocks {
-    implicit val hc: HeaderCarrier = HeaderCarrier()
-    implicit val mockAuthConnector: AuthConnector = mock[AuthConnector]
-    implicit val mockTaxCreditsBrokerConnector: TaxCreditsBrokerConnector = mock[TaxCreditsBrokerConnector]
-    implicit val mockAuditConnector: AuditConnector = mock[AuditConnector]
-    implicit val mockService: LiveTaxCreditsSummaryService = mock[LiveTaxCreditsSummaryService]
-    implicit val mockConfiguration: Configuration = fakeApplication.injector.instanceOf[Configuration]
-  }
+  implicit val hc: HeaderCarrier = HeaderCarrier()
+  implicit val mockAuthConnector: AuthConnector = mock[AuthConnector]
+  implicit val mockTaxCreditsBrokerConnector: TaxCreditsBrokerConnector = mock[TaxCreditsBrokerConnector]
+  implicit val mockAuditConnector: AuditConnector = mock[AuditConnector]
+  implicit val mockService: LiveTaxCreditsSummaryService = mock[LiveTaxCreditsSummaryService]
+  implicit val mockConfiguration: Configuration = fakeApplication.injector.instanceOf[Configuration]
+  implicit val mockShuttering: Shuttering = mock[Shuttering]
 
   val noNinoFoundOnAccount: JsValue = Json.parse("""{"code":"UNAUTHORIZED","message":"NINO does not exist on account"}""")
   val lowConfidenceLevelError: JsValue = Json.parse("""{"code":"LOW_CONFIDENCE_LEVEL","message":"Confidence Level on account does not allow access"}""")

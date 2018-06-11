@@ -83,12 +83,12 @@ class SandboxTaxCreditsSummaryISpec extends BaseISpec with FileResource {
       response.status shouldBe 503
 
       (response.json \ "shuttered").as[Boolean] shouldBe true
-      (response.json \ "title").as[String] shouldBe "This service is unavailable due to scheduled maintenance"
+      (response.json \ "title").as[String] shouldBe "Service Unavailable"
 
       val messages: JsArray = (response.json \ "messages").as[JsArray]
       messages.value.size shouldBe 2
-      messages(0).as[JsString].value shouldBe "We will be available from midnight, please try again then."
-      messages(1).as[JsString].value shouldBe "Go to GOV UK to <a href=“https://www.gov.uk“>manage your tax credits online</a>"
+      messages(0).as[JsString].value shouldBe "You'll be able to use the app to manage your tax credits at 9am on Monday 29 May 2017."
+      messages(1).as[JsString].value shouldBe "Go to GOV UK to <a href=“https://www.gov.uk“>manage your tax credits online</a>."
     }
   }
 }

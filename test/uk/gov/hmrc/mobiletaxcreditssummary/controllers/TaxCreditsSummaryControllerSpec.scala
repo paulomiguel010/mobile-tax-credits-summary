@@ -32,11 +32,12 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class TaxCreditsSummaryControllerSpec extends TestSetup with WithFakeApplication with FileResource {
   "tax credits summary live" should {
-    "process the request successfully and filter children older than 20 and where deceased flags are active and user is not excluded" in new mocks {
+    val controller = new LiveTaxCreditsSummaryController(mockAuthConnector, 200, mockService, mockShuttering)
+    "process the request successfully and filter children older than 20 and where deceased flags are active and user is not excluded" in {
       val expectedResult = TaxCreditsSummaryResponse(excluded = false, Some(TaxCreditsSummary(paymentSummary, personalDetails(nino),
         Some(partnerDetails(nino)), Children(Seq(SarahSmith, JosephSmith, MarySmith)))))
-      val controller = new LiveTaxCreditsSummaryController(mockAuthConnector, 200, mockService)
 
+      mockNotShuttered()
       mockAuthorisationGrantAccess(Some(nino) and L200)
       (mockService.getTaxCreditsSummaryResponse(_: Nino)(_: HeaderCarrier, _: ExecutionContext)).
         expects(Nino(nino), *, *).returning(expectedResult)
@@ -46,28 +47,27 @@ class TaxCreditsSummaryControllerSpec extends TestSetup with WithFakeApplication
       contentAsJson(result) shouldBe toJson(expectedResult)
     }
 
-    "return 401 when the nino in the request does not match the authority nino" in new mocks {
+    "return 401 when the nino in the request does not match the authority nino" in {
       mockAuthorisationGrantAccess(Some(nino) and L200)
 
-      val controller = new LiveTaxCreditsSummaryController(mockAuthConnector, 200, mockService)
       status(await(controller.taxCreditsSummary(incorrectNino)(emptyRequestWithAcceptHeader(renewalReference, Nino(nino))))) shouldBe 401
     }
 
-    "return 500 given a service error" in new mocks {
+    "return 500 given a service error" in {
       mockAuthorisationGrantAccess(Some(nino) and L200)
+      mockNotShuttered()
 
       (mockService.getTaxCreditsSummaryResponse(_: Nino)(_: HeaderCarrier, _: ExecutionContext)).
         expects(Nino(nino), *, *).returning(Future failed Upstream5xxResponse("error", 500, 500))
 
-      val controller = new LiveTaxCreditsSummaryController(mockAuthConnector, 200, mockService)
       status(await(controller.taxCreditsSummary(Nino(nino))(emptyRequestWithAcceptHeader(renewalReference, Nino(nino))))) shouldBe 500
     }
 
-    "return the summary successfully when journeyId is supplied and user is not excluded" in new mocks {
+    "return the summary successfully when journeyId is supplied and user is not excluded" in {
       val expectedResult = TaxCreditsSummaryResponse(excluded = false, Some(TaxCreditsSummary(paymentSummary, personalDetails(nino),
         Some(partnerDetails(nino)), Children(Seq(SarahSmith, JosephSmith, MarySmith)))))
-      val controller = new LiveTaxCreditsSummaryController(mockAuthConnector, 200, mockService)
 
+      mockNotShuttered()
       mockAuthorisationGrantAccess(Some(nino) and L200)
       (mockService.getTaxCreditsSummaryResponse(_: Nino)(_: HeaderCarrier, _: ExecutionContext)).
         expects(Nino(nino), *, *).returning(expectedResult)
@@ -78,33 +78,31 @@ class TaxCreditsSummaryControllerSpec extends TestSetup with WithFakeApplication
       contentAsJson(result) shouldBe toJson(expectedResult)
     }
 
-    "return unauthorized when authority record does not contain a NINO" in new mocks {
+    "return unauthorized when authority record does not contain a NINO" in {
       mockAuthorisationGrantAccess(None and L200)
 
-      val controller = new LiveTaxCreditsSummaryController(mockAuthConnector, 200, mockService)
       val result: Result = await(controller.taxCreditsSummary(Nino(nino))(emptyRequestWithAcceptHeader(renewalReference, Nino(nino))))
       status(result) shouldBe 401
       contentAsJson(result) shouldBe noNinoFoundOnAccount
     }
 
-    "return unauthorized when authority record has a low CL" in new mocks {
+    "return unauthorized when authority record has a low CL" in {
       mockAuthorisationGrantAccess(Some(nino) and L100)
 
-      val controller = new LiveTaxCreditsSummaryController(mockAuthConnector, 200, mockService)
       val result: Result = await(controller.taxCreditsSummary(Nino(nino))(emptyRequestWithAcceptHeader(renewalReference, Nino(nino))))
       status(result) shouldBe 401
       contentAsJson(result) shouldBe lowConfidenceLevelError
     }
 
-    "return status code 406 when the headers are invalid" in new mocks {
-      val controller = new LiveTaxCreditsSummaryController(mockAuthConnector, 200, mockService)
+    "return status code 406 when the headers are invalid" in {
       val result: Result = await(controller.taxCreditsSummary(Nino(nino))(requestInvalidHeaders))
       status(result) shouldBe 406
     }
+
   }
 
   "tax credits summary Sandbox" should {
-    "return the summary response from a resource" in new mocks {
+    "return the summary response from a resource" in {
       val controller = new SandboxTaxCreditsSummaryController()
       val result: Result = await(controller.taxCreditsSummary(Nino(nino)).apply(fakeRequest))
       val expectedTaxCreditsSummary: TaxCreditsSummary =
