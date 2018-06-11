@@ -78,6 +78,8 @@ class GuiceModule(environment: Environment, configuration: Configuration) extend
     val message1 = getDecodedConfig("shuttering.message1")
     val message2 = getDecodedConfig("shuttering.message2")
 
-    bind(classOf[Shuttering]).toInstance(ConfiguredShuttering(shuttered, title, Seq(message1, message2)))
+    val messages = if(message2.length < 1) Seq(message1) else Seq(message1, message2)
+
+    bind(classOf[Shuttering]).toInstance(ConfiguredShuttering(shuttered, title, messages))
   }
 }

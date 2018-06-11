@@ -22,7 +22,8 @@ import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.mobiletaxcreditssummary.stubs.AuthStub.grantAccess
 import uk.gov.hmrc.mobiletaxcreditssummary.support.BaseISpec
 
-class ShutteringISpec extends BaseISpec with FileResource {
+trait ShutteringSetup extends BaseISpec with FileResource {
+  def shutteringMessage2: (String, String)
 
   val title = "Service Unavailable"
   val message1 = "You'll be able to use the app to manage your tax credits at 9am on Monday 29 May 2017."
@@ -36,13 +37,19 @@ class ShutteringISpec extends BaseISpec with FileResource {
     "shuttering.shuttered" -> true,
     "shuttering.title" -> base64EncodedTitle,
     "shuttering.message1" -> base64EncodedMessage1,
-    "shuttering.message2" -> base64EncodedMessage2
+    shutteringMessage2
   )
 
-  "GET /income/:nino/tax-credits/tax-credits-summary " should {
-    def request(nino: Nino): WSRequest = wsUrl(s"/income/${nino.value}/tax-credits/tax-credits-summary").withHeaders(acceptJsonHeader)
+  def request(nino: Nino): WSRequest = wsUrl(s"/income/${nino.value}/tax-credits/tax-credits-summary").withHeaders(acceptJsonHeader)
+}
 
-    "return a shuttered payload" in {
+class ShutteringISpec extends ShutteringSetup {
+
+  override def shutteringMessage2: (String, String) = "shuttering.message2" -> base64EncodedMessage2
+
+  "GET /income/:nino/tax-credits/tax-credits-summary " should {
+
+    "return a shuttered payload with both messages" in {
       grantAccess(nino1.value)
 
       val response = await(request(nino1).get())
@@ -50,6 +57,24 @@ class ShutteringISpec extends BaseISpec with FileResource {
       (response.json \ "title").as[String] shouldBe title
       (response.json \ "shuttered").as[Boolean] shouldBe true
       (response.json \ "messages").as[Seq[String]] shouldBe Seq(message1, message2)
+    }
+  }
+}
+
+class ShutteringEmptySecondMessageISpec extends ShutteringSetup {
+
+  override def shutteringMessage2: (String, String) = "shuttering.message2" -> ""
+
+  "GET /income/:nino/tax-credits/tax-credits-summary " should {
+
+    "return a shuttered payload with only 1 message" in {
+      grantAccess(nino1.value)
+
+      val response = await(request(nino1).get())
+      response.status shouldBe 503
+      (response.json \ "title").as[String] shouldBe title
+      (response.json \ "shuttered").as[Boolean] shouldBe true
+      (response.json \ "messages").as[Seq[String]] shouldBe Seq(message1)
     }
   }
 }
