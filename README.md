@@ -43,7 +43,7 @@ To test different scenarios, add a header "SANDBOX-CONTROL" with one of the foll
 
 To start the service locally either use service-manager or clone this repo and use sbt to start:
 ```
- cd $WORKSPACE/tax-credits-summary
+ cd $WORKSPACE/mobile-tax-credits-summary
  sbt start 
 ```
 
