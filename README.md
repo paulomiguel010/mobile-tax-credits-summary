@@ -25,7 +25,7 @@ All the above endpoints are accessible on sandbox with `/sandbox` prefix on each
     GET /sandbox/income/:nino/tax-credits/tax-credits-summary
 ```
 
-To trigger the sandbox endpoints locally, use the "X-MOBILE-USER" header with one of the following values:
+To trigger the sandbox endpoints locally, use the "X-MOBILE-USER-ID" header with one of the following values:
 208606423740 or 167927702220
 
 To test different scenarios, add a header "SANDBOX-CONTROL" with one of the following values:
@@ -56,6 +56,10 @@ To test the shuttering behaviour:
 ```
 curl -i -H"SANDBOX-CONTROL:SHUTTERED" localhost:8246/sandbox/income/CS700100A/tax-credits/tax-credits-summary
 ```
+
+To test the same shuttering behaviour using the built-in routing to /sandbox when specifying a test user id in the X-MOBILE-USER-ID
+curl -i -H"SANDBOX-CONTROL:SHUTTERED" -H"X-MOBILE-USER-ID:208606423740" localhost:8246/income/CS700100A/tax-credits/tax-credits-summary 
+
 
 For more information, visit Confluence and see the following page:
 ```/display/NGC/How+to+shutter+NGC+apis```
