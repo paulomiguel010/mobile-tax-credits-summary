@@ -27,6 +27,7 @@ import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, NotFoundException, ServiceUnavailableException}
 import uk.gov.hmrc.mobiletaxcreditssummary.controllers.action.AccessControl
+import uk.gov.hmrc.mobiletaxcreditssummary.domain.SandboxShuttering
 import uk.gov.hmrc.mobiletaxcreditssummary.domain.userdata._
 import uk.gov.hmrc.mobiletaxcreditssummary.services.LiveTaxCreditsSummaryService
 import uk.gov.hmrc.play.HeaderCarrierConverter.fromHeadersAndSession
@@ -65,6 +66,14 @@ trait TaxCreditsSummaryController extends BaseController {
 
 @Singleton
 class SandboxTaxCreditsSummaryController() extends TaxCreditsSummaryController with FileResource {
+  val shuttering =
+    SandboxShuttering(
+      shuttered = true,
+      "This service is unavailable due to scheduled maintenance",
+      Seq(
+        "We will be available from midnight, please try again then.",
+        "Go to GOV UK to <a href=“https://www.gov.uk“>manage your tax credits online</a>"))
+
   override final def taxCreditsSummary(nino: Nino, journeyId: Option[String] = None): Action[AnyContent] = Action.async {
     implicit request =>
       Future successful (request.headers.get("SANDBOX-CONTROL") match {
@@ -73,6 +82,7 @@ class SandboxTaxCreditsSummaryController() extends TaxCreditsSummaryController w
         case Some("ERROR-401") => Unauthorized
         case Some("ERROR-403") => Forbidden
         case Some("ERROR-500") => InternalServerError
+        case Some("SHUTTERED") => ServiceUnavailable(toJson(shuttering))
         case _ => //TAX-CREDITS-USER
           val resource: String = findResource(s"/resources/taxcreditssummary/${nino.value}.json").getOrElse(throw new IllegalArgumentException("Resource not found!"))
           val response = TaxCreditsSummaryResponse(excluded = false, Some(Json.parse(resource).as[TaxCreditsSummary]))
