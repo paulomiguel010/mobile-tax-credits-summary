@@ -57,6 +57,9 @@ To test the shuttering behaviour:
 curl -i -H"SANDBOX-CONTROL:SHUTTERED" localhost:8246/sandbox/income/CS700100A/tax-credits/tax-credits-summary
 ```
 
+For more information, visit Confluence and see the following page:
+```/display/NGC/How+to+shutter+NGC+apis```
+
 # Definition
 API definition for the service will be available under `/api/definition` endpoint.
 See definition in `/conf/api-definition.json` for the format.
