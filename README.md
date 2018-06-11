@@ -59,7 +59,7 @@ curl -i -H"SANDBOX-CONTROL:SHUTTERED" -H"Accept: application/vnd.hmrc.1.0+json" 
 
 To test the same shuttering behaviour using the built-in routing to /sandbox when specifying a test user id in the X-MOBILE-USER-ID
 ```
-curl -i -H"SANDBOX-CONTROL:SHUTTERED" -H"X-MOBILE-USER-ID:208606423740" localhost:8246/income/CS700100A/tax-credits/tax-credits-summary 
+curl -i -H"SANDBOX-CONTROL:SHUTTERED" -H"Accept: application/vnd.hmrc.1.0+json" -H"X-MOBILE-USER-ID:208606423740" localhost:8246/income/CS700100A/tax-credits/tax-credits-summary 
 ```
 
 For more information, visit Confluence and see the following page:
