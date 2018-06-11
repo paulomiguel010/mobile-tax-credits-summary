@@ -21,6 +21,5 @@ import play.api.libs.json.{Json, OFormat}
 case class Children(child: Seq[Child])
 
 object Children {
-  val key: String = "child-data"
   implicit val formats: OFormat[Children] = Json.format[Children]
 }

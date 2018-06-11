@@ -46,9 +46,7 @@ class TaxCreditsSummaryServiceSpec extends TestSetup with WithFakeApplication wi
     TaxCreditsSummaryResponse(
       taxCreditsSummary = Some(TaxCreditsSummary(
         paymentSummary,
-        personalDetails(nino),
-        Some(partnerDetails(nino)),
-        Children(Seq(SarahSmith, JosephSmith, MarySmith)))))
+        Some(claimants))))
 
   "getTaxCreditsSummaryResponse" should{
     "return a non-tax-credits user payload when payment summary gives excluded = true " in {
@@ -60,9 +58,9 @@ class TaxCreditsSummaryServiceSpec extends TestSetup with WithFakeApplication wi
 
     "return a tax-credits user payload when a payment summary is returned" in {
       mockTaxCreditsBrokerConnectorGetPaymentSummary(paymentSummary, taxCreditsNino)
-      mockTaxCreditsBrokerConnectorGetChildren(Children(Seq(SarahSmith, JosephSmith, MarySmith, JennySmith, PeterSmith, SimonSmith)), taxCreditsNino)
-      mockTaxCreditsBrokerConnectorGetPartnerDetails(Some(partnerDetails(nino)), taxCreditsNino)
-      mockTaxCreditsBrokerConnectorGetPersonalDetails(personalDetails(nino), taxCreditsNino)
+      mockTaxCreditsBrokerConnectorGetChildren(Seq(SarahSmith, JosephSmith, MarySmith, JennySmith, PeterSmith, SimonSmith), taxCreditsNino)
+      mockTaxCreditsBrokerConnectorGetPartnerDetails(Some(partnerDetails), taxCreditsNino)
+      mockTaxCreditsBrokerConnectorGetPersonalDetails(personalDetails, taxCreditsNino)
       mockAuditGetTaxCreditsSummary(Nino(nino))
 
       await(service.getTaxCreditsSummaryResponse(Nino(nino))) shouldBe taxCreditsSummary

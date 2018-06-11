@@ -50,11 +50,14 @@ trait TaxCreditsBrokerConnectorMock extends MockFactory {
 
   val address = Address("addressLine1", "addressLine2", Some("addressLine3"), Some("addressLine4"), Some("postcode"))
 
-  def personalDetails(nino: String) = PersonalDetails("firstname", "surname", TaxCreditsNino(nino), address, None, None, None, None)
+  val personalDetails = Person("firstname", "surname")
 
-  def partnerDetails(nino: String) = PartnerDetails("forename", Some("othernames"), "surname", TaxCreditsNino(nino), address, None, None, None, None)
+  val partnerDetails = Person("forename", "surname")
 
-  def mockTaxCreditsBrokerConnectorGetChildren(response: Children, nino: TaxCreditsNino)(implicit taxCreditsBrokerConnector: TaxCreditsBrokerConnector): Unit =
+  val claimants = Claimants(personalDetails, Some(partnerDetails), Seq(
+    Person("Sarah", "Smith"), Person("Joseph", "Smith"), Person("Mary", "Smith")))
+
+  def mockTaxCreditsBrokerConnectorGetChildren(response: Seq[Child], nino: TaxCreditsNino)(implicit taxCreditsBrokerConnector: TaxCreditsBrokerConnector): Unit =
     (taxCreditsBrokerConnector.getChildren(_: TaxCreditsNino)(_: HeaderCarrier, _: ExecutionContext)).expects(nino, *, *).returning(Future successful response)
 
   def mockTaxCreditsBrokerConnectorGetChildrenFailure(response: Exception, nino: TaxCreditsNino)(implicit taxCreditsBrokerConnector: TaxCreditsBrokerConnector): Unit =
@@ -66,11 +69,15 @@ trait TaxCreditsBrokerConnectorMock extends MockFactory {
   def mockTaxCreditsBrokerConnectorGetExclusionFailure(response: Exception, nino: TaxCreditsNino)(implicit taxCreditsBrokerConnector: TaxCreditsBrokerConnector): Unit =
     (taxCreditsBrokerConnector.getExclusion(_: TaxCreditsNino)(_: HeaderCarrier, _: ExecutionContext)).expects(nino, *, *).returning(Future failed response)
 
-  def mockTaxCreditsBrokerConnectorGetPartnerDetails(response: Option[PartnerDetails], nino: TaxCreditsNino)(implicit taxCreditsBrokerConnector: TaxCreditsBrokerConnector): Unit =
+  def mockTaxCreditsBrokerConnectorGetPartnerDetails(response: Option[Person], nino: TaxCreditsNino)(implicit taxCreditsBrokerConnector: TaxCreditsBrokerConnector): Unit =
     (taxCreditsBrokerConnector.getPartnerDetails(_: TaxCreditsNino)(_: HeaderCarrier, _: ExecutionContext)).expects(nino, *, *).returning(Future successful response)
 
-  def mockTaxCreditsBrokerConnectorGetPersonalDetails(response: PersonalDetails, nino: TaxCreditsNino)(implicit taxCreditsBrokerConnector: TaxCreditsBrokerConnector): Unit =
+  //failure
+
+  def mockTaxCreditsBrokerConnectorGetPersonalDetails(response: Person, nino: TaxCreditsNino)(implicit taxCreditsBrokerConnector: TaxCreditsBrokerConnector): Unit =
     (taxCreditsBrokerConnector.getPersonalDetails(_: TaxCreditsNino)(_: HeaderCarrier, _: ExecutionContext)).expects(nino, *, *).returning(Future successful response)
+
+  //failure
 
   def mockTaxCreditsBrokerConnectorGetPaymentSummary(response: PaymentSummary, nino: TaxCreditsNino)(implicit taxCreditsBrokerConnector: TaxCreditsBrokerConnector): Unit =
     (taxCreditsBrokerConnector.getPaymentSummary(_: TaxCreditsNino)(_: HeaderCarrier, _: ExecutionContext)).expects(nino, *, *).returning(Future successful response)

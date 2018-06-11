@@ -34,8 +34,7 @@ class TaxCreditsSummaryControllerSpec extends TestSetup with WithFakeApplication
   "tax credits summary live" should {
     val controller = new LiveTaxCreditsSummaryController(mockAuthConnector, 200, mockService, mockShuttering)
     "process the request successfully and filter children older than 20 and where deceased flags are active and user is not excluded" in {
-      val expectedResult = TaxCreditsSummaryResponse(excluded = false, Some(TaxCreditsSummary(paymentSummary, personalDetails(nino),
-        Some(partnerDetails(nino)), Children(Seq(SarahSmith, JosephSmith, MarySmith)))))
+      val expectedResult = TaxCreditsSummaryResponse(excluded = false, Some(TaxCreditsSummary(paymentSummary, Some(claimants))))
 
       mockNotShuttered()
       mockAuthorisationGrantAccess(Some(nino) and L200)
@@ -64,8 +63,7 @@ class TaxCreditsSummaryControllerSpec extends TestSetup with WithFakeApplication
     }
 
     "return the summary successfully when journeyId is supplied and user is not excluded" in {
-      val expectedResult = TaxCreditsSummaryResponse(excluded = false, Some(TaxCreditsSummary(paymentSummary, personalDetails(nino),
-        Some(partnerDetails(nino)), Children(Seq(SarahSmith, JosephSmith, MarySmith)))))
+      val expectedResult = TaxCreditsSummaryResponse(excluded = false, Some(TaxCreditsSummary(paymentSummary, Some(claimants))))
 
       mockNotShuttered()
       mockAuthorisationGrantAccess(Some(nino) and L200)

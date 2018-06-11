@@ -40,14 +40,14 @@ class TaxCreditsBrokerConnector @Inject()(http: CoreGet,
   def getPaymentSummary(nino: TaxCreditsNino)(implicit headerCarrier: HeaderCarrier, ex: ExecutionContext): Future[PaymentSummary] =
     withCircuitBreaker(http.GET[PaymentSummary](url(nino, "payment-summary")))
 
-  def getPersonalDetails(nino: TaxCreditsNino)(implicit headerCarrier: HeaderCarrier, ex: ExecutionContext): Future[PersonalDetails] =
-    withCircuitBreaker(http.GET[PersonalDetails](url(nino, "personal-details")))
+  def getPersonalDetails(nino: TaxCreditsNino)(implicit headerCarrier: HeaderCarrier, ex: ExecutionContext): Future[Person] =
+    withCircuitBreaker(http.GET[Person](url(nino, "personal-details")))
 
-  def getPartnerDetails(nino: TaxCreditsNino)(implicit headerCarrier: HeaderCarrier, ex: ExecutionContext): Future[Option[PartnerDetails]] =
-    withCircuitBreaker(http.GET[Option[PartnerDetails]](url(nino, "partner-details")))
+  def getPartnerDetails(nino: TaxCreditsNino)(implicit headerCarrier: HeaderCarrier, ex: ExecutionContext): Future[Option[Person]] =
+    withCircuitBreaker(http.GET[Option[Person]](url(nino, "partner-details")))
 
-  def getChildren(nino: TaxCreditsNino)(implicit headerCarrier: HeaderCarrier, ex: ExecutionContext): Future[Children] =
-    withCircuitBreaker(http.GET[Children](url(nino, "children")))
+  def getChildren(nino: TaxCreditsNino)(implicit headerCarrier: HeaderCarrier, ex: ExecutionContext): Future[Seq[Child]] =
+    withCircuitBreaker(http.GET[Children](url(nino, "children"))).map(children => children.child)
 
   def getExclusion(nino: TaxCreditsNino)(implicit headerCarrier: HeaderCarrier, ex: ExecutionContext): Future[Exclusion] =
     withCircuitBreaker(http.GET[Exclusion](url(nino, "exclusion")))

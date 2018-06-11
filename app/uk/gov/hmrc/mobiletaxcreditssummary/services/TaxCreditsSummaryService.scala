@@ -41,9 +41,9 @@ class LiveTaxCreditsSummaryService @Inject()(taxCreditsBrokerConnector: TaxCredi
     val tcNino = TaxCreditsNino(nino.value)
 
     def buildTaxCreditsSummary(paymentSummary: PaymentSummary): Future[TaxCreditsSummaryResponse] = {
-      def getChildrenAge16AndUnder: Future[Children] = {
+      def getChildrenAge16AndUnder: Future[Seq[Person]] = {
         taxCreditsBrokerConnector.getChildren(tcNino).map(children =>
-          Children(Child.getEligibleChildren(children)))
+          Child.getEligibleChildren(children))
       }
 
       val childrenFuture = getChildrenAge16AndUnder
@@ -54,7 +54,7 @@ class LiveTaxCreditsSummaryService @Inject()(taxCreditsBrokerConnector: TaxCredi
         children <- childrenFuture
         partnerDetails <- partnerDetailsFuture
         personalDetails <- personalDetailsFuture
-      } yield TaxCreditsSummaryResponse(false, Some(TaxCreditsSummary(paymentSummary, personalDetails, partnerDetails, children)))
+      } yield TaxCreditsSummaryResponse(taxCreditsSummary = Some(TaxCreditsSummary(paymentSummary, Some(Claimants(personalDetails, partnerDetails, children)))))
     }
 
     def buildResponseFromPaymentSummary: Future[TaxCreditsSummaryResponse] = {

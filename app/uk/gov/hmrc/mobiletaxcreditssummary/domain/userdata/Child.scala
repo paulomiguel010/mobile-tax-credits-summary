@@ -36,11 +36,11 @@ object Child {
     years.getYears
   }
 
-  def getEligibleChildren(children: Children): Seq[Child] = {
-    children.child.filter { child =>
+  def getEligibleChildren(children: Seq[Child]): Seq[Person] = {
+    children.filter { child =>
       getAge(child) < 20 &&
         child.isActive &&
         child.dateOfDeath.isEmpty
-    }
+    }.map(child => Person(child.firstNames, child.surname))
   }
 }
