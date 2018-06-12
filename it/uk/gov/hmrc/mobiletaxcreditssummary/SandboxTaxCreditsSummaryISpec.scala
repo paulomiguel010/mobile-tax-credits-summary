@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.mobiletaxcreditssummary
 
-import play.api.libs.json.{JsArray, JsString}
+import play.api.libs.json.{JsArray, JsString, JsValue}
 import play.api.libs.ws.{WSRequest, WSResponse}
 import uk.gov.hmrc.api.sandbox.FileResource
 import uk.gov.hmrc.domain.Nino
@@ -39,6 +39,7 @@ class SandboxTaxCreditsSummaryISpec extends BaseISpec with FileResource {
       response.status shouldBe 200
       (response.json \ "excluded").as[Boolean] shouldBe false
       (response.json \ "taxCreditsSummary" \ "paymentSummary" \ "workingTaxCredit" \ "paymentFrequency").as[String] shouldBe "weekly"
+      (response.json \ "taxCreditsSummary" \ "claimants" \ "personalDetails" \ "forename").as[String] shouldBe "firstname"
     }
 
     "return excluded = false and a tax credit summary where SANDBOX-CONTROL is any other value" in {
@@ -46,6 +47,15 @@ class SandboxTaxCreditsSummaryISpec extends BaseISpec with FileResource {
       response.status shouldBe 200
       (response.json \ "excluded").as[Boolean] shouldBe false
       (response.json \ "taxCreditsSummary" \ "paymentSummary" \ "workingTaxCredit" \ "paymentFrequency").as[String] shouldBe "weekly"
+      (response.json \ "taxCreditsSummary" \ "claimants" \ "personalDetails" \ "forename").as[String] shouldBe "firstname"
+    }
+
+    "return excluded = false and a tax credit summary with no claimants section where SANDBOX-CONTROL is CLAIMANTS_FAILURE" in {
+      val response = await(request(sandboxNino).withHeaders(mobileHeader, "SANDBOX-CONTROL" -> "CLAIMANTS_FAILURE").get())
+      response.status shouldBe 200
+      (response.json \ "excluded").as[Boolean] shouldBe false
+      (response.json \ "taxCreditsSummary" \ "paymentSummary" \ "workingTaxCredit" \ "paymentFrequency").as[String] shouldBe "weekly"
+      (response.json \ "taxCreditsSummary" \ "claimants").toOption shouldBe None
     }
 
     "return excluded = true and no tax credit summary data if excluded where SANDBOX-CONTROL is EXCLUDED-TAX-CREDITS-USER" in {

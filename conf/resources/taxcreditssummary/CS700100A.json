@@ -103,30 +103,30 @@
         "amount": 33,
         "paymentDate": 1503737758781
       }
-    ],
-    "claimants": {
-      "personalDetails": {
-        "forename": "firstname",
-        "surname": "surname"
+    ]
+  },
+  "claimants": {
+    "personalDetails": {
+      "forename": "firstname",
+      "surname": "surname"
+    },
+    "partnerDetails": {
+      "forename": "forename",
+      "surname": "surname"
+    },
+    "children": [
+      {
+        "forename": "Sarah",
+        "surname": "Smith"
       },
-      "partnerDetails": {
-        "forename": "forename",
-        "surname": "surname"
+      {
+        "forename": "Joseph",
+        "surname": "Smith"
       },
-      "children": [
-        {
-          "firstNames": "Sarah",
-          "surname": "Smith"
-        },
-        {
-          "firstNames": "Joseph",
-          "surname": "Smith"
-        },
-        {
-          "firstNames": "Mary",
-          "surname": "Smith"
-        }
-      ]
-    }
+      {
+        "forename": "Mary",
+        "surname": "Smith"
+      }
+    ]
   }
 }

@@ -32,9 +32,10 @@ To test different scenarios, add a header "SANDBOX-CONTROL" with one of the foll
 
 | *Value* | *Description* |
 |--------|----|
-| "TAX-CREDITS-USER" | Happy path, non-excluded Tax Credits Users |
-| "NON-TAX-CREDITS-USER" | Unhappy path, non-excluded, Non Tax Credits Users |
-| "EXCLUDED-TAX-CREDITS-USER" | Unhappy path, excluded, Non Tax Credits Users |
+| "TAX-CREDITS-USER" | Happy path, non-excluded Tax Credits User with full summary |
+| "NON-TAX-CREDITS-USER" | Happy path, non-excluded, Non Tax Credits User with no summary |
+| "EXCLUDED-TAX-CREDITS-USER" | Happy path, excluded Tax Credits User with no summary |
+| "CLAIMANTS_FAILURE" | Unhappy path, non-excluded Tax Credits User with partial summary missing claimants section | 
 | "ERROR-401" | Unhappy path, trigger a 401 Unauthorized response |
 | "ERROR-403" | Unhappy path, trigger a 403 Forbidden response |
 | "ERROR-500" | Unhappy path, trigger a 500 Internal Server Error response |
