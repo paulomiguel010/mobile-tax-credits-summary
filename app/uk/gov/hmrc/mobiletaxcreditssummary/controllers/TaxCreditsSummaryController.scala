@@ -93,8 +93,15 @@ class SandboxTaxCreditsSummaryController() extends TaxCreditsSummaryController w
           case Some("ERROR-403") => Forbidden
           case Some("ERROR-500") => InternalServerError
           case Some("SHUTTERED") => ServiceUnavailable(toJson(shuttering))
+          case Some("CLAIMANTS_FAILURE") =>
+            val resource: String = findResource(s"/resources/taxcreditssummary/${nino.value}.json")
+              .getOrElse(throw new IllegalArgumentException("Resource not found!"))
+            val taxCreditsSummary: TaxCreditsSummary = TaxCreditsSummary(Json.parse(resource).as[TaxCreditsSummary].paymentSummary, None)
+            val response = TaxCreditsSummaryResponse(excluded = false, Some(taxCreditsSummary))
+            Ok(toJson(response))
           case _ => //TAX-CREDITS-USER
-            val resource: String = findResource(s"/resources/taxcreditssummary/${nino.value}.json").getOrElse(throw new IllegalArgumentException("Resource not found!"))
+            val resource: String = findResource(s"/resources/taxcreditssummary/${nino.value}.json")
+              .getOrElse(throw new IllegalArgumentException("Resource not found!"))
             val response = TaxCreditsSummaryResponse(excluded = false, Some(Json.parse(resource).as[TaxCreditsSummary]))
             Ok(toJson(response))
         })

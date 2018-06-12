@@ -105,54 +105,28 @@
       }
     ]
   },
-  "personalDetails": {
-    "forename": "Nuala",
-    "surname": "O'Shea",
-    "nino": "CS700100A",
-    "address": {
-      "addressLine1": "999 Big Street",
-      "addressLine2": "Worthing",
-      "addressLine3": "West Sussex",
-      "postCode": "BN99 8IG"
-    }
-  },
-  "partnerDetails": {
-    "forename": "Frederick",
-    "otherForenames": "Tarquin",
-    "surname": "Hunter-Smith",
-    "nino": "CS700100A",
-    "address": {
-      "addressLine1": "999 Big Street",
-      "addressLine2": "Worthing",
-      "addressLine3": "West Sussex",
-      "postCode": "BN99 8IG"
-    }
-  },
-  "children": {
-    "child": [
+  "claimants": {
+    "personalDetails": {
+      "forename": "firstname",
+      "surname": "surname"
+    },
+    "partnerDetails": {
+      "forename": "Frederick",
+      "otherForenames": "Tarquin",
+      "surname": "Hunter-Smith"
+    },
+    "children": [
       {
-        "firstNames": "Sarah",
-        "surname": "Smith",
-        "dateOfBirth": 936057600000,
-        "hasFTNAE": false,
-        "hasConnexions": false,
-        "isActive": true
+        "forename": "Sarah",
+        "surname": "Smith"
       },
       {
-        "firstNames": "Joseph",
-        "surname": "Smith",
-        "dateOfBirth": 884304000000,
-        "hasFTNAE": false,
-        "hasConnexions": false,
-        "isActive": true
+        "forename": "Joseph",
+        "surname": "Smith"
       },
       {
-        "firstNames": "Mary",
-        "surname": "Smith",
-        "dateOfBirth": 852768000000,
-        "hasFTNAE": false,
-        "hasConnexions": false,
-        "isActive": true
+        "forename": "Mary",
+        "surname": "Smith"
       }
     ]
   }

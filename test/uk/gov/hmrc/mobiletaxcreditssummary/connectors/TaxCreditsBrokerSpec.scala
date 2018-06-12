@@ -55,7 +55,7 @@ class TaxCreditsBrokerSpec extends UnitSpec with ScalaFutures with WithFakeAppli
 
     lazy val http200Person: Future[AnyRef with HttpResponse] = Future.successful(HttpResponse(200, Some(Json.toJson(personalDetails))))
     lazy val http200Partner: Future[AnyRef with HttpResponse] = Future.successful(HttpResponse(200, Some(Json.toJson(partnerDetails))))
-    lazy val http200Children: Future[AnyRef with HttpResponse] = Future.successful(HttpResponse(200, Some(Json.toJson(children))))
+    lazy val http200Children: Future[AnyRef with HttpResponse] = Future.successful(HttpResponse(200, Some(Json.toJson(tcbChildren))))
     lazy val http200Payment: Future[AnyRef with HttpResponse] = Future.successful(HttpResponse(200, Some(Json.toJson(paymentSummary))))
     lazy val http200Exclusion: Future[AnyRef with HttpResponse] = Future.successful(HttpResponse(200, Some(Json.toJson(exclusion))))
 
@@ -70,22 +70,11 @@ class TaxCreditsBrokerSpec extends UnitSpec with ScalaFutures with WithFakeAppli
 
     val nino = Nino("KM569110B")
     val address = Address("addressLine1", "addressLine2", Some("addressLine3"), Some("addressLine4"), Some("postcode"))
-    val personalDetails = PersonalDetails("Nuala",
-      "O'Shea",
-      TaxCreditsNino(nino.value),
-      address,
-      None, None, None, None)
-    val partnerDetails = PartnerDetails("Frederick",
-      Some("Tarquin"),
-      "Hunter-Smith",
-      TaxCreditsNino(nino.value),
-      address,
-      None,
-      None,
-      None,
-      None)
+    val personalDetails = Person(forename = "Nuala", surname = "O'Shea")
+    val partnerDetails = Person("Frederick", Some("Tarquin"), "Hunter-Smith")
 
-    val children = Children(Seq(SarahSmith, JosephSmith, MarySmith))
+    val children = Seq(SarahSmith, JosephSmith, MarySmith)
+    val tcbChildren = Children(children)
 
     val exclusion = Exclusion(true)
     val serviceUrl = "someUrl"

@@ -41,20 +41,25 @@ class LiveTaxCreditsSummaryService @Inject()(taxCreditsBrokerConnector: TaxCredi
     val tcNino = TaxCreditsNino(nino.value)
 
     def buildTaxCreditsSummary(paymentSummary: PaymentSummary): Future[TaxCreditsSummaryResponse] = {
-      def getChildrenAge16AndUnder: Future[Children] = {
+      def getChildrenAge16AndUnder: Future[Seq[Person]] = {
         taxCreditsBrokerConnector.getChildren(tcNino).map(children =>
-          Children(Child.getEligibleChildren(children)))
+          Child.getEligibleChildren(children))
       }
 
       val childrenFuture = getChildrenAge16AndUnder
       val partnerDetailsFuture = taxCreditsBrokerConnector.getPartnerDetails(tcNino)
       val personalDetailsFuture = taxCreditsBrokerConnector.getPersonalDetails(tcNino)
 
-      for {
+      val claimants: Future[Option[Claimants]] = (for {
         children <- childrenFuture
         partnerDetails <- partnerDetailsFuture
         personalDetails <- personalDetailsFuture
-      } yield TaxCreditsSummaryResponse(false, Some(TaxCreditsSummary(paymentSummary, personalDetails, partnerDetails, children)))
+      } yield Some(Claimants(personalDetails, partnerDetails, children))).recover {
+        case _ => None
+      }
+
+      claimants.map(c => TaxCreditsSummaryResponse(taxCreditsSummary = Some(TaxCreditsSummary(paymentSummary, c))))
+
     }
 
     def buildResponseFromPaymentSummary: Future[TaxCreditsSummaryResponse] = {
@@ -81,7 +86,7 @@ class LiveTaxCreditsSummaryService @Inject()(taxCreditsBrokerConnector: TaxCredi
       }
     }
 
-    buildResponseFromPaymentSummary.recoverWith{
+    buildResponseFromPaymentSummary.recoverWith {
       case _ => exclusion
     }
   }
