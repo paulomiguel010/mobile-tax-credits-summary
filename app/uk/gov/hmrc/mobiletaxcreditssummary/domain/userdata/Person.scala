@@ -18,7 +18,7 @@ package uk.gov.hmrc.mobiletaxcreditssummary.domain.userdata
 
 import play.api.libs.json.{Json, OFormat}
 
-case class Person(forename: String, surname: String)
+case class Person(forename: String, otherForenames: Option[String] = None, surname: String)
 
 object Person {
   implicit val formats: OFormat[Person] = Json.format[Person]

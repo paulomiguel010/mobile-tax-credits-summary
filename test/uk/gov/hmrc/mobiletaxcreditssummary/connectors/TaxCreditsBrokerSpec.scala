@@ -70,8 +70,8 @@ class TaxCreditsBrokerSpec extends UnitSpec with ScalaFutures with WithFakeAppli
 
     val nino = Nino("KM569110B")
     val address = Address("addressLine1", "addressLine2", Some("addressLine3"), Some("addressLine4"), Some("postcode"))
-    val personalDetails = Person("Nuala", "O'Shea")
-    val partnerDetails = Person("Frederick", "Hunter-Smith")
+    val personalDetails = Person(forename = "Nuala", surname = "O'Shea")
+    val partnerDetails = Person("Frederick", Some("Tarquin"), "Hunter-Smith")
 
     val children = Seq(SarahSmith, JosephSmith, MarySmith)
     val tcbChildren = Children(children)

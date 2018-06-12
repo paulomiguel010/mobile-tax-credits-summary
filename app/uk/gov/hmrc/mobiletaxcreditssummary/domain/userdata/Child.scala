@@ -41,6 +41,6 @@ object Child {
       getAge(child) < 20 &&
         child.isActive &&
         child.dateOfDeath.isEmpty
-    }.map(child => Person(child.firstNames, child.surname))
+    }.map(child => Person(forename = child.firstNames, surname = child.surname))
   }
 }

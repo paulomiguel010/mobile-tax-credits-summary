@@ -111,8 +111,9 @@
       "surname": "surname"
     },
     "partnerDetails": {
-      "forename": "forename",
-      "surname": "surname"
+      "forename": "Frederick",
+      "otherForenames": "Tarquin",
+      "surname": "Hunter-Smith"
     },
     "children": [
       {

@@ -50,12 +50,12 @@ trait TaxCreditsBrokerConnectorMock extends MockFactory {
 
   val address = Address("addressLine1", "addressLine2", Some("addressLine3"), Some("addressLine4"), Some("postcode"))
 
-  val personalDetails = Person("firstname", "surname")
+  val personalDetails = Person(forename = "firstname", surname = "surname")
 
-  val partnerDetails = Person("forename", "surname")
+  val partnerDetails = Person(forename = "forename", surname = "surname")
 
   val claimants = Claimants(personalDetails, Some(partnerDetails), Seq(
-    Person("Sarah", "Smith"), Person("Joseph", "Smith"), Person("Mary", "Smith")))
+    Person(forename = "Sarah", surname = "Smith"), Person(forename = "Joseph", surname = "Smith"), Person(forename = "Mary", surname = "Smith")))
 
   def mockTaxCreditsBrokerConnectorGetExclusion(response: Exclusion, nino: TaxCreditsNino)(implicit taxCreditsBrokerConnector: TaxCreditsBrokerConnector): Unit =
     (taxCreditsBrokerConnector.getExclusion(_: TaxCreditsNino)(_: HeaderCarrier, _: ExecutionContext)).expects(nino, *, *).returning(Future successful response)
