@@ -57,6 +57,11 @@ trait TaxCreditsBrokerConnectorMock extends MockFactory {
   val claimants = Claimants(personalDetails, Some(partnerDetails), Seq(
     Person(forename = "Sarah", surname = "Smith"), Person(forename = "Joseph", surname = "Smith"), Person(forename = "Mary", surname = "Smith")))
 
+  val claimantsNoPartnerDetails = Claimants(personalDetails, None, Seq(
+    Person(forename = "Sarah", surname = "Smith"), Person(forename = "Joseph", surname = "Smith"), Person(forename = "Mary", surname = "Smith")))
+
+  val claimantsNoChildren = Claimants(personalDetails, Some(partnerDetails), Seq.empty)
+
   def mockTaxCreditsBrokerConnectorGetExclusion(response: Exclusion, nino: TaxCreditsNino)(implicit taxCreditsBrokerConnector: TaxCreditsBrokerConnector): Unit =
     (taxCreditsBrokerConnector.getExclusion(_: TaxCreditsNino)(_: HeaderCarrier, _: ExecutionContext)).expects(nino, *, *).returning(Future successful response)
 

@@ -20,7 +20,7 @@ import com.google.inject.name.Named
 import com.google.inject.{Inject, Singleton}
 import play.api.Mode.Mode
 import play.api.{Configuration, Environment}
-import uk.gov.hmrc.http.{CoreGet, HeaderCarrier}
+import uk.gov.hmrc.http.{CoreGet, HeaderCarrier, NotFoundException}
 import uk.gov.hmrc.mobiletaxcreditssummary.config.ServicesCircuitBreaker
 import uk.gov.hmrc.mobiletaxcreditssummary.domain.TaxCreditsNino
 import uk.gov.hmrc.mobiletaxcreditssummary.domain.userdata._
@@ -44,7 +44,9 @@ class TaxCreditsBrokerConnector @Inject()(http: CoreGet,
     withCircuitBreaker(http.GET[Person](url(nino, "personal-details")))
 
   def getPartnerDetails(nino: TaxCreditsNino)(implicit headerCarrier: HeaderCarrier, ex: ExecutionContext): Future[Option[Person]] =
-    withCircuitBreaker(http.GET[Option[Person]](url(nino, "partner-details")))
+    withCircuitBreaker(http.GET[Option[Person]](url(nino, "partner-details"))).recover {
+      case _: NotFoundException => None
+    }
 
   def getChildren(nino: TaxCreditsNino)(implicit headerCarrier: HeaderCarrier, ex: ExecutionContext): Future[Seq[Child]] =
     withCircuitBreaker(http.GET[Children](url(nino, "children"))).map(children => children.child)

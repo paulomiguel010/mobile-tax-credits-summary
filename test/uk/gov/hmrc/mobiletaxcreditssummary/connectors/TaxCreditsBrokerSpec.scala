@@ -55,6 +55,8 @@ class TaxCreditsBrokerSpec extends UnitSpec with ScalaFutures with WithFakeAppli
 
     lazy val http200Person: Future[AnyRef with HttpResponse] = Future.successful(HttpResponse(200, Some(Json.toJson(personalDetails))))
     lazy val http200Partner: Future[AnyRef with HttpResponse] = Future.successful(HttpResponse(200, Some(Json.toJson(partnerDetails))))
+    lazy val http400Exception: Future[AnyRef with HttpResponse] = Future.successful(HttpResponse(400, None))
+    lazy val http404NoPartner: Future[AnyRef with HttpResponse] = Future.successful(HttpResponse(404, None))
     lazy val http200Children: Future[AnyRef with HttpResponse] = Future.successful(HttpResponse(200, Some(Json.toJson(tcbChildren))))
     lazy val http200Payment: Future[AnyRef with HttpResponse] = Future.successful(HttpResponse(200, Some(Json.toJson(paymentSummary))))
     lazy val http200Exclusion: Future[AnyRef with HttpResponse] = Future.successful(HttpResponse(200, Some(Json.toJson(exclusion))))
@@ -114,6 +116,20 @@ class TaxCreditsBrokerSpec extends UnitSpec with ScalaFutures with WithFakeAppli
       override lazy val response: Future[AnyRef with HttpResponse] = http200Partner
 
       await(connector.getPartnerDetails(TaxCreditsNino(nino.value))) shouldBe Some(partnerDetails)
+    }
+
+    "return a valid response for getPartnerDetails when a 404 response is received for no partner" in new Setup {
+      override lazy val response: Future[AnyRef with HttpResponse] = http404NoPartner
+
+      await(connector.getPartnerDetails(TaxCreditsNino(nino.value))) shouldBe None
+    }
+
+    "return an error response for getPartnerDetails when a 4xx response is returned (excluding 404)" in new Setup {
+      override lazy val response: Future[AnyRef with HttpResponse] = http400Exception
+
+      intercept[BadRequestException] {
+        await(connector.getPartnerDetails(TaxCreditsNino(nino.value)))
+      }
     }
 
     "return a valid response for getChildren when a 200 response is received with a valid json payload" in new Setup {
