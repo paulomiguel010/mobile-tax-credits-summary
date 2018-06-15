@@ -18,10 +18,7 @@ package uk.gov.hmrc.mobiletaxcreditssummary.connectors
 
 import com.google.inject.name.Named
 import com.google.inject.{Inject, Singleton}
-import play.api.Mode.Mode
-import play.api.{Configuration, Environment}
 import uk.gov.hmrc.http.{CoreGet, HeaderCarrier, NotFoundException}
-import uk.gov.hmrc.mobiletaxcreditssummary.config.ServicesCircuitBreaker
 import uk.gov.hmrc.mobiletaxcreditssummary.domain.TaxCreditsNino
 import uk.gov.hmrc.mobiletaxcreditssummary.domain.userdata._
 
@@ -29,28 +26,25 @@ import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class TaxCreditsBrokerConnector @Inject()(http: CoreGet,
-                                          @Named("tax-credits-broker") serviceUrl: String,
-                                          val runModeConfiguration: Configuration, environment: Environment) extends ServicesCircuitBreaker {
-  override protected def mode: Mode = environment.mode
-
+                                          @Named("tax-credits-broker") serviceUrl: String) {
   val externalServiceName = "tax-credits-broker"
 
   def url(nino: TaxCreditsNino, route: String) = s"$serviceUrl/tcs/${nino.value}/$route"
 
   def getPaymentSummary(nino: TaxCreditsNino)(implicit headerCarrier: HeaderCarrier, ex: ExecutionContext): Future[PaymentSummary] =
-    withCircuitBreaker(http.GET[PaymentSummary](url(nino, "payment-summary")))
+    http.GET[PaymentSummary](url(nino, "payment-summary"))
 
   def getPersonalDetails(nino: TaxCreditsNino)(implicit headerCarrier: HeaderCarrier, ex: ExecutionContext): Future[Person] =
-    withCircuitBreaker(http.GET[Person](url(nino, "personal-details")))
+    http.GET[Person](url(nino, "personal-details"))
 
   def getPartnerDetails(nino: TaxCreditsNino)(implicit headerCarrier: HeaderCarrier, ex: ExecutionContext): Future[Option[Person]] =
-    withCircuitBreaker(http.GET[Option[Person]](url(nino, "partner-details"))).recover {
+    http.GET[Option[Person]](url(nino, "partner-details")).recover {
       case _: NotFoundException => None
     }
 
   def getChildren(nino: TaxCreditsNino)(implicit headerCarrier: HeaderCarrier, ex: ExecutionContext): Future[Seq[Child]] =
-    withCircuitBreaker(http.GET[Children](url(nino, "children"))).map(children => children.child)
+    http.GET[Children](url(nino, "children")).map(children => children.child)
 
   def getExclusion(nino: TaxCreditsNino)(implicit headerCarrier: HeaderCarrier, ex: ExecutionContext): Future[Exclusion] =
-    withCircuitBreaker(http.GET[Exclusion](url(nino, "exclusion")))
+    http.GET[Exclusion](url(nino, "exclusion"))
 }

@@ -9,7 +9,6 @@ private object AppDependencies {
   private val domainVersion = "5.1.0"
   private val playHmrcApiVersion = "2.1.0"
   private val playUI = "7.14.0"
-  private val circuitBreaker = "3.2.0"
   private val hmrctestVersion = "3.0.0"
   private val wiremockVersion = "2.10.1"
   private val scalamockVersion = "4.0.0"
@@ -23,7 +22,6 @@ private object AppDependencies {
     "uk.gov.hmrc" %% "auth-client" % authClientVersion,
     "uk.gov.hmrc" %% "play-hmrc-api" % playHmrcApiVersion,
     "uk.gov.hmrc" %% "domain" % domainVersion,
-    "uk.gov.hmrc" %% "reactive-circuit-breaker" % circuitBreaker,
     "uk.gov.hmrc" %% "play-ui" %  playUI
   )
 

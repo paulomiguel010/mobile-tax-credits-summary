@@ -35,6 +35,18 @@ object TaxCreditsBrokerStub {
     stubFor(get(urlPathEqualTo(s"/tcs/${nino.value}/children")).willReturn(
       aResponse().withStatus(200).withHeader("Content-Type", "application/json").withBody(childrenJson)))
 
+  def childrenAreNotFound(nino: Nino): Unit =
+    stubFor(get(urlPathEqualTo(s"/tcs/${nino.value}/children")).willReturn(
+      aResponse().withStatus(200).withHeader("Content-Type", "application/json").withBody("""{ "child": [] }""")))
+
+  def children500(nino: Nino): Unit =
+    stubFor(get(urlPathEqualTo(s"/tcs/${nino.value}/children")).willReturn(
+      aResponse().withStatus(500).withHeader("Content-Type", "application/json")))
+
+  def children503(nino: Nino): Unit =
+    stubFor(get(urlPathEqualTo(s"/tcs/${nino.value}/children")).willReturn(
+      aResponse().withStatus(503).withHeader("Content-Type", "application/json")))
+
   def partnerJson(nino:Nino): String =
     s"""{
         "forename": "Frederick",
@@ -52,6 +64,18 @@ object TaxCreditsBrokerStub {
   def partnerDetailsAreFound(climantsNino: Nino, partnersNino:Nino): Unit =
     stubFor(get(urlPathEqualTo(s"/tcs/${climantsNino.value}/partner-details")).willReturn(
       aResponse().withStatus(200).withHeader("Content-Type", "application/json").withBody(partnerJson(partnersNino))))
+
+  def partnerDetailsAreNotFound(climantsNino: Nino, partnersNino:Nino): Unit =
+    stubFor(get(urlPathEqualTo(s"/tcs/${climantsNino.value}/partner-details")).willReturn(
+      aResponse().withStatus(404).withHeader("Content-Type", "application/json")))
+
+  def partnerDetails500(climantsNino: Nino, partnersNino:Nino): Unit =
+    stubFor(get(urlPathEqualTo(s"/tcs/${climantsNino.value}/partner-details")).willReturn(
+      aResponse().withStatus(500).withHeader("Content-Type", "application/json")))
+
+  def partnerDetails503(climantsNino: Nino, partnersNino:Nino): Unit =
+    stubFor(get(urlPathEqualTo(s"/tcs/${climantsNino.value}/partner-details")).willReturn(
+      aResponse().withStatus(503).withHeader("Content-Type", "application/json")))
 
   val paymentSummaryJson: String =
     """
@@ -167,6 +191,18 @@ object TaxCreditsBrokerStub {
     stubFor(get(urlPathEqualTo(s"/tcs/${nino.value}/payment-summary")).willReturn(
       aResponse().withStatus(200).withHeader("Content-Type", "application/json").withBody(paymentSummaryJson)))
 
+  def paymntSummaryNonTCUser(nino: Nino): Unit =
+    stubFor(get(urlPathEqualTo(s"/tcs/${nino.value}/payment-summary")).willReturn(
+      aResponse().withStatus(200).withHeader("Content-Type", "application/json").withBody("""{ "excluded": true }""")))
+
+  def paymntSummary500(nino: Nino): Unit =
+    stubFor(get(urlPathEqualTo(s"/tcs/${nino.value}/payment-summary")).willReturn(
+      aResponse().withStatus(500).withHeader("Content-Type", "application/json")))
+
+  def paymntSummary503(nino: Nino): Unit =
+    stubFor(get(urlPathEqualTo(s"/tcs/${nino.value}/payment-summary")).willReturn(
+      aResponse().withStatus(503).withHeader("Content-Type", "application/json")))
+
   def personalDetailsJson(nino: Nino) =
     s"""
       {
@@ -186,7 +222,31 @@ object TaxCreditsBrokerStub {
     stubFor(get(urlPathEqualTo(s"/tcs/${nino.value}/personal-details")).willReturn(
       aResponse().withStatus(200).withHeader("Content-Type", "application/json").withBody(personalDetailsJson(nino))))
 
+  def personalDetailsAreNotFound(nino: Nino): Unit =
+    stubFor(get(urlPathEqualTo(s"/tcs/${nino.value}/personal-details")).willReturn(
+      aResponse().withStatus(404).withHeader("Content-Type", "application/json")))
+
+  def personalDetails500(nino: Nino): Unit =
+    stubFor(get(urlPathEqualTo(s"/tcs/${nino.value}/personal-details")).willReturn(
+      aResponse().withStatus(404).withHeader("Content-Type", "application/json")))
+
+  def personalDetails503(nino: Nino): Unit =
+    stubFor(get(urlPathEqualTo(s"/tcs/${nino.value}/personal-details")).willReturn(
+      aResponse().withStatus(404).withHeader("Content-Type", "application/json")))
+
   def exclusionFlagIsFound(nino: Nino, excluded:Boolean): Unit =
     stubFor(get(urlPathEqualTo(s"/tcs/${nino.value}/exclusion")).willReturn(
       aResponse().withStatus(200).withHeader("Content-Type", "application/json").withBody(s"""{ "excluded" : $excluded }""")))
+
+  def exclusionFlagIsNotFound(nino: Nino): Unit =
+    stubFor(get(urlPathEqualTo(s"/tcs/${nino.value}/exclusion")).willReturn(
+      aResponse().withStatus(404).withHeader("Content-Type", "application/json")))
+
+  def exclusion500(nino: Nino): Unit =
+    stubFor(get(urlPathEqualTo(s"/tcs/${nino.value}/exclusion")).willReturn(
+      aResponse().withStatus(500).withHeader("Content-Type", "application/json")))
+
+  def exclusion503(nino: Nino): Unit =
+    stubFor(get(urlPathEqualTo(s"/tcs/${nino.value}/exclusion")).willReturn(
+      aResponse().withStatus(503).withHeader("Content-Type", "application/json")))
 }
