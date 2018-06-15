@@ -205,12 +205,6 @@ class TaxCreditsSummaryISpec extends BaseISpec with FileResource {
       response.status shouldBe 200
       (response.json \ "excluded").as[Boolean] shouldBe false
       (response.json \\ "claimants") .isEmpty shouldBe true
-      ((response.json \\ "claimants").head \ "personalDetails" \ "forename").as[String] shouldBe "Nuala"
-      ((response.json \\ "claimants").head \ "personalDetails" \ "surname").as[String] shouldBe "O'Shea"
-      ((response.json \\ "claimants").head \ "partnerDetails" \ "forename").as[String] shouldBe "Frederick"
-      ((response.json \\ "claimants").head \ "partnerDetails" \ "otherForenames").as[String] shouldBe "Tarquin"
-      ((response.json \\ "claimants").head \ "partnerDetails" \ "surname").as[String] shouldBe "Hunter-Smith"
-      (response.json \\"children").isEmpty shouldBe true
     }
 
     "return a valid response for CLAIMANTS_FAILURE - /tcs/:nino/children call returns 500" in {

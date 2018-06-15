@@ -37,7 +37,7 @@ object TaxCreditsBrokerStub {
 
   def childrenAreNotFound(nino: Nino): Unit =
     stubFor(get(urlPathEqualTo(s"/tcs/${nino.value}/children")).willReturn(
-      aResponse().withStatus(404).withHeader("Content-Type", "application/json")))
+      aResponse().withStatus(200).withHeader("Content-Type", "application/json").withBody("""{"excluded":true}""")))
 
   def children500(nino: Nino): Unit =
     stubFor(get(urlPathEqualTo(s"/tcs/${nino.value}/children")).willReturn(
