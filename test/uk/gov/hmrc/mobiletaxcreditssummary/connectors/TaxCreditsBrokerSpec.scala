@@ -21,21 +21,17 @@ import org.joda.time.DateTime
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.concurrent.ScalaFutures
 import play.api.libs.json.Json
-import play.api.{Configuration, Environment}
-import uk.gov.hmrc.circuitbreaker.CircuitBreakerConfig
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http._
 import uk.gov.hmrc.http.hooks.HttpHook
-import uk.gov.hmrc.mobiletaxcreditssummary.config.ServicesCircuitBreaker
 import uk.gov.hmrc.mobiletaxcreditssummary.domain.TaxCreditsNino
 import uk.gov.hmrc.mobiletaxcreditssummary.domain.userdata._
-import uk.gov.hmrc.play.config.ServicesConfig
 import uk.gov.hmrc.play.test.{UnitSpec, WithFakeApplication}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class TaxCreditsBrokerSpec extends UnitSpec with ScalaFutures with WithFakeApplication with CircuitBreakerTest {
+class TaxCreditsBrokerSpec extends UnitSpec with ScalaFutures with WithFakeApplication {
 
   trait Setup extends MockFactory {
     implicit lazy val hc: HeaderCarrier = HeaderCarrier()
@@ -81,12 +77,7 @@ class TaxCreditsBrokerSpec extends UnitSpec with ScalaFutures with WithFakeAppli
     val exclusion = Exclusion(true)
     val serviceUrl = "someUrl"
 
-    class TestTaxCreditsBrokerConnector(http: CoreGet,
-                                        runModeConfiguration: Configuration,
-                                        environment: Environment) extends TaxCreditsBrokerConnector(http, serviceUrl, runModeConfiguration, environment)
-      with ServicesConfig with ServicesCircuitBreaker {
-      override protected def circuitBreakerConfig = CircuitBreakerConfig(externalServiceName, 5, 2000, 2000)
-    }
+    class TestTaxCreditsBrokerConnector(http: CoreGet) extends TaxCreditsBrokerConnector(http, serviceUrl)
 
     def TaxCreditsBrokerTestConnector(response: Option[Future[HttpResponse]] = None): TestTaxCreditsBrokerConnector = {
 
@@ -98,7 +89,7 @@ class TaxCreditsBrokerSpec extends UnitSpec with ScalaFutures with WithFakeAppli
         override def doGet(url: String)(implicit hc: HeaderCarrier): Future[HttpResponse] = response.getOrElse(throw new Exception("No response defined!"))
       }
 
-      new TestTaxCreditsBrokerConnector(http, mock[Configuration], mock[Environment])
+      new TestTaxCreditsBrokerConnector(http)
     }
 
     val connector: TaxCreditsBrokerConnector = TaxCreditsBrokerTestConnector(Some(response))
@@ -156,9 +147,5 @@ class TaxCreditsBrokerSpec extends UnitSpec with ScalaFutures with WithFakeAppli
       result shouldBe exclusionPaymentSummary
     }
 
-    "circuit breaker configuration should be applied and unhealthy service exception will kick in after 5th failed call" in new Setup {
-      override lazy val response: Future[Nothing] = http500Response
-      executeCB(connector.getPaymentSummary(TaxCreditsNino(nino.value)))
-    }
   }
 }
