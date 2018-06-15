@@ -4,7 +4,7 @@ The Tax Credits Summary object
   
 * **URL**
 
-  `/income/:nino/tax-credits-summary`
+  `/income/:nino/tax-credits/tax-credits-summary`
 
 * **Method:**
   
@@ -26,6 +26,7 @@ The Tax Credits Summary object
 
 ```json
 {
+   "excluded": false,
    "taxCreditSummary":{
       "paymentSummary":{
          "workingTaxCredit":{
@@ -196,7 +197,17 @@ The Tax Credits Summary object
     
 ```json
 {
-   "taxCreditSummary":{}
+   "excluded": true
+}
+```
+
+  * **Code:** 200 <br />
+    **Note:** If the user is a non tax credits user <br />
+    **Content:**
+    
+```json
+{
+   "excluded": false
 }
 ```
  
