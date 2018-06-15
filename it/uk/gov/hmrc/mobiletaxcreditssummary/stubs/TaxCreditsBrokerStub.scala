@@ -191,6 +191,10 @@ object TaxCreditsBrokerStub {
     stubFor(get(urlPathEqualTo(s"/tcs/${nino.value}/payment-summary")).willReturn(
       aResponse().withStatus(200).withHeader("Content-Type", "application/json").withBody(paymentSummaryJson)))
 
+  def paymntSummaryNonTCUser(nino: Nino): Unit =
+    stubFor(get(urlPathEqualTo(s"/tcs/${nino.value}/payment-summary")).willReturn(
+      aResponse().withStatus(200).withHeader("Content-Type", "application/json").withBody("""{ "excluded": true }""")))
+
   def paymntSummary500(nino: Nino): Unit =
     stubFor(get(urlPathEqualTo(s"/tcs/${nino.value}/payment-summary")).willReturn(
       aResponse().withStatus(500).withHeader("Content-Type", "application/json")))

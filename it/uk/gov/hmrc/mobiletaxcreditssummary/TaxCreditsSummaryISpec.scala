@@ -60,19 +60,21 @@ class TaxCreditsSummaryISpec extends BaseISpec with FileResource {
 
     "return a valid response for NON-TAX-CREDITS-USER" in {
       grantAccess(nino1.value)
-      exclusionFlagIsNotFound(nino1)
+      paymntSummaryNonTCUser(nino1)
 
       val response = await(request(nino1).get())
       response.status shouldBe 200
       (response.json \ "excluded").as[Boolean] shouldBe false
     }
 
-    "return a valid response for ERROR-500 - tcs/:nino/paymentSummary call returns 500" in {
+    "return a valid response for EXCLUDED USER" in {
       grantAccess(nino1.value)
       paymntSummary500(nino1)
+      exclusionFlagIsFound(nino1, excluded = true)
 
       val response = await(request(nino1).get())
-      response.status shouldBe 500
+      response.status shouldBe 200
+      (response.json \ "excluded").as[Boolean] shouldBe true
     }
 
     "return a valid response for ERROR-500 - tcs/:nino/exclusion call returns 500" in {
