@@ -1,4 +1,4 @@
-The Tax Credits Summary object
+The Tax Credits Summary response
 ----
   Fetch the Tax Credits Summary object for a given nino.
   
