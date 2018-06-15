@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.mobiletaxcreditssummary
 
+import play.api.libs.json.JsArray
 import play.api.libs.ws.WSRequest
 import uk.gov.hmrc.api.sandbox.FileResource
 import uk.gov.hmrc.domain.Nino
@@ -204,10 +205,11 @@ class TaxCreditsSummaryISpec extends BaseISpec with FileResource {
       val response = await(request(nino1).get())
       response.status shouldBe 200
       (response.json \ "excluded").as[Boolean] shouldBe false
-      (response.json \\ "claimants") .isEmpty shouldBe false
+      (response.json \\ "claimants").isEmpty shouldBe false
       ((response.json \\ "claimants").head \ "personalDetails" \ "forename").as[String] shouldBe "Nuala"
       ((response.json \\ "claimants").head \ "personalDetails" \ "surname").as[String] shouldBe "O'Shea"
-      (response.json \\ "children").isEmpty shouldBe true
+      (response.json \\ "children").isEmpty shouldBe false
+      (response.json \\ "children").head.asInstanceOf[JsArray].value.isEmpty
       ((response.json \\ "claimants").head \ "partnerDetails" \ "forename").as[String] shouldBe "Frederick"
       ((response.json \\ "claimants").head \ "partnerDetails" \ "otherForenames").as[String] shouldBe "Tarquin"
       ((response.json \\ "claimants").head \ "partnerDetails" \ "surname").as[String] shouldBe "Hunter-Smith"
