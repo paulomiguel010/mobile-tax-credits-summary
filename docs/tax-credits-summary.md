@@ -86,14 +86,6 @@ The Tax Credits Summary response
       {
         "forename": "Sarah",
         "surname": "Smith"
-      },
-      {
-        "forename": "Joseph",
-        "surname": "Smith"
-      },
-      {
-        "forename": "Mary",
-        "surname": "Smith"
       }
     ]
   }
