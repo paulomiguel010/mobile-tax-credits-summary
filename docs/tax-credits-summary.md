@@ -25,7 +25,8 @@ The Tax Credits Summary response
     **Content:**
 
 ```json
-{
+{ 
+  "excluded": false,
   "paymentSummary": {
     "workingTaxCredit": {
       "paymentSeq": [
@@ -34,21 +35,6 @@ The Tax Credits Summary response
           "paymentDate": 1509008158781,
           "oneOffPayment": false,
           "earlyPayment": false
-        },
-        {
-          "amount": 55,
-          "paymentDate": 1511690158781,
-          "oneOffPayment": false,
-          "holidayType": "bankHoliday",
-          "earlyPayment": true,
-          "explanatoryText" : "Your payment is early because of UK bank holidays."
-        },
-        {
-          "amount": 55,
-          "paymentDate": 1514282158781,
-          "oneOffPayment": true,
-          "earlyPayment": false,
-          "explanatoryText" : "This is because of a recent change and is to help you get the right amount of tax credits."
         }
       ],
       "paymentFrequency": "weekly",
@@ -58,21 +44,6 @@ The Tax Credits Summary response
           "paymentDate": 1503737758781,
           "oneOffPayment": false,
           "earlyPayment": false
-        },
-        {
-          "amount": 43,
-          "paymentDate": 1501059358781,
-          "oneOffPayment": false,
-          "holidayType": "bankHoliday",
-          "earlyPayment": true,
-          "explanatoryText" : "Your payment was early because of UK bank holidays."
-        },
-        {
-          "amount": 53,
-          "paymentDate": 1498467358781,
-          "oneOffPayment": true,
-          "earlyPayment": false,
-          "explanatoryText" : "This was because of a recent change and was to help you get the right amount of tax credits."
         }
       ]
     },
@@ -83,21 +54,6 @@ The Tax Credits Summary response
           "paymentDate": 1509008158781,
           "oneOffPayment": false,
           "earlyPayment": false
-        },
-        {
-          "amount": 55,
-          "paymentDate": 1511690158781,
-          "oneOffPayment": false,
-          "holidayType": "bankHoliday",
-          "earlyPayment": true,
-          "explanatoryText" : "Your payment is early because of UK bank holidays."
-        },
-        {
-          "amount": 55,
-          "paymentDate": 1514282158781,
-          "oneOffPayment": true,
-          "earlyPayment": false,
-          "explanatoryText" : "This is because of a recent change and is to help you get the right amount of tax credits."
         }
       ],
       "paymentFrequency": "weekly"
@@ -107,28 +63,12 @@ The Tax Credits Summary response
       {
         "amount": 110,
         "paymentDate": 1509008158781
-      },
-      {
-        "amount": 110,
-        "paymentDate": 1511690158781
-      },
-      {
-        "amount": 110,
-        "paymentDate": 1514282158781
       }
     ],
     "previousTotalsByDate": [
       {
         "amount": 53,
         "paymentDate": 1498467358781
-      },
-      {
-        "amount": 43,
-        "paymentDate": 1501059358781
-      },
-      {
-        "amount": 33,
-        "paymentDate": 1503737758781
       }
     ]
   },
@@ -185,7 +125,7 @@ The Tax Credits Summary response
   * **Code:** 401 UNAUTHORIZED <br/>
     **Content:** `{"code":"UNAUTHORIZED","message":"Bearer token is missing or not authorized for access"}`
 
-  * **Code:** 401 FORBIDDEN <br/>
+  * **Code:** 403 FORBIDDEN <br/>
     **Content:** `{"code":"FORBIDDEN","message":Authenticated user is not authorised for this resource"}`
 
   * **Code:** 404 NOTFOUND <br/>
