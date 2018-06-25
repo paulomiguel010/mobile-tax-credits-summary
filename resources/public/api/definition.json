@@ -1,7 +1,7 @@
 {
   "scopes":[
     {
-      "key":"read:mobile-tax-credits-summary",
+      "key":"read:native-apps-api-orchestration",
       "name":"Execute tax-credits-summary call",
       "description":"Retrieve the tax-credits-summary for a specific NINO"
     }
