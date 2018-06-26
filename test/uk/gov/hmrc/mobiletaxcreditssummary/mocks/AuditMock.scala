@@ -18,8 +18,10 @@ package uk.gov.hmrc.mobiletaxcreditssummary.mocks
 
 import org.scalamock.matchers.MatcherBase
 import org.scalamock.scalatest.MockFactory
+import play.api.libs.json.Json
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.mobiletaxcreditssummary.domain.userdata.TaxCreditsSummaryResponse
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.play.audit.http.connector.AuditResult.Success
 import uk.gov.hmrc.play.audit.model.DataEvent
@@ -39,19 +41,14 @@ trait AuditMock extends MockFactory {
     })
   }
 
-  def mockAudit(nino: Nino, transactionName: String)(implicit auditConnector: AuditConnector): Unit = {
+  def mockAudit(nino: Nino, expectedDetails: TaxCreditsSummaryResponse)(implicit auditConnector: AuditConnector): Unit = {
     (auditConnector.sendEvent(_: DataEvent)(_: HeaderCarrier, _: ExecutionContext)).expects(
       dataEventWith(
         "mobile-tax-credits-summary",
-        "ServiceResponseSent",
-        Map("transactionName" -> transactionName),
-        Map("nino" -> nino.value)), *, * ).returning(Future successful Success)
+        "TaxCreditsSummaryResponse",
+        Map.empty,
+        Map("nino" -> nino.value,
+          "summaryData" -> Json.toJson(expectedDetails).toString)), *, * ).returning(Future successful Success)
   }
-
-  def mockAuditGetTaxCreditsExclusion(nino: Nino)(implicit auditConnector: AuditConnector): Unit =
-    mockAudit(nino, "getTaxCreditExclusion")
-
-  def mockAuditGetTaxCreditsSummary(nino: Nino)(implicit auditConnector: AuditConnector): Unit =
-    mockAudit(nino, "getTaxCreditSummary")
 
 }

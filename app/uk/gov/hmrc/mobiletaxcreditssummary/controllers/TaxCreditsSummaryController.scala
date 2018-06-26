@@ -23,6 +23,7 @@ import play.api.libs.json.Json.toJson
 import play.api.mvc._
 import uk.gov.hmrc.api.controllers._
 import uk.gov.hmrc.api.sandbox.FileResource
+import uk.gov.hmrc.api.service.Auditor
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, NotFoundException, ServiceUnavailableException}
@@ -31,6 +32,8 @@ import uk.gov.hmrc.mobiletaxcreditssummary.domain._
 import uk.gov.hmrc.mobiletaxcreditssummary.domain.userdata._
 import uk.gov.hmrc.mobiletaxcreditssummary.services.LiveTaxCreditsSummaryService
 import uk.gov.hmrc.play.HeaderCarrierConverter.fromHeadersAndSession
+import uk.gov.hmrc.play.audit.http.connector.AuditConnector
+import uk.gov.hmrc.play.audit.model.DataEvent
 import uk.gov.hmrc.play.bootstrap.controller.BaseController
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -112,7 +115,10 @@ class SandboxTaxCreditsSummaryController() extends TaxCreditsSummaryController w
 class LiveTaxCreditsSummaryController @Inject()(override val authConnector: AuthConnector,
                                                 @Named("controllers.confidenceLevel") override val confLevel: Int,
                                                 val service: LiveTaxCreditsSummaryService,
-                                                override val shuttering: Shuttering) extends TaxCreditsSummaryController with AccessControl with ErrorHandling {
+                                                override val shuttering: Shuttering,
+                                                val auditConnector: AuditConnector,
+                                                val appNameConfiguration: Configuration)
+  extends TaxCreditsSummaryController with AccessControl with ErrorHandling with Auditor {
 
   override final def taxCreditsSummary(nino: Nino, journeyId: Option[String] = None): Action[AnyContent] =
     validateAcceptWithAuth(acceptHeaderValidationRules, Option(nino)).async {
@@ -120,8 +126,17 @@ class LiveTaxCreditsSummaryController @Inject()(override val authConnector: Auth
         implicit val hc: HeaderCarrier = fromHeadersAndSession(request.headers, None)
         shutteringErrorWrapper {
           service.getTaxCreditsSummaryResponse(nino).map { summary =>
+            sendAuditEvent(nino, summary)
             Ok(toJson(summary))
           }
         }
     }
+
+  private def sendAuditEvent(nino: Nino, response: TaxCreditsSummaryResponse): Unit = {
+    auditConnector.sendEvent(
+      DataEvent(appName, "TaxCreditsSummaryResponse",
+        tags = Map.empty,
+        detail = Map("nino" -> nino.value,
+          "summaryData" -> Json.toJson(response).toString())))
+  }
 }

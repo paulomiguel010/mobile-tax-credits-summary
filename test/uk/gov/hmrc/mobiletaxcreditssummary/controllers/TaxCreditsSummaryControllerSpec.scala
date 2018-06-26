@@ -32,12 +32,13 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class TaxCreditsSummaryControllerSpec extends TestSetup with WithFakeApplication with FileResource {
   "tax credits summary live" should {
-    val controller = new LiveTaxCreditsSummaryController(mockAuthConnector, 200, mockService, mockShuttering)
+    val controller = new LiveTaxCreditsSummaryController(mockAuthConnector, 200, mockService, mockShuttering, mockAuditConnector, mockConfiguration)
     "process the request successfully and filter children older than 20 and where deceased flags are active and user is not excluded" in {
       val expectedResult = TaxCreditsSummaryResponse(excluded = false, Some(TaxCreditsSummary(paymentSummary, Some(claimants))))
 
       mockNotShuttered()
       mockAuthorisationGrantAccess(Some(nino) and L200)
+      mockAudit(Nino(nino), expectedResult)
       (mockService.getTaxCreditsSummaryResponse(_: Nino)(_: HeaderCarrier, _: ExecutionContext)).
         expects(Nino(nino), *, *).returning(expectedResult)
 
@@ -67,6 +68,7 @@ class TaxCreditsSummaryControllerSpec extends TestSetup with WithFakeApplication
 
       mockNotShuttered()
       mockAuthorisationGrantAccess(Some(nino) and L200)
+      mockAudit(Nino(nino), expectedResult)
       (mockService.getTaxCreditsSummaryResponse(_: Nino)(_: HeaderCarrier, _: ExecutionContext)).
         expects(Nino(nino), *, *).returning(expectedResult)
 
