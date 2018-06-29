@@ -19,7 +19,7 @@ package uk.gov.hmrc.mobiletaxcreditssummary.controllers
 import javax.inject.{Inject, Named, Singleton}
 import play.api._
 import play.api.libs.json.Json
-import play.api.libs.json.Json.toJson
+import play.api.libs.json.Json.{obj, toJson}
 import play.api.mvc._
 import uk.gov.hmrc.api.controllers._
 import uk.gov.hmrc.api.sandbox.FileResource
@@ -35,6 +35,7 @@ import uk.gov.hmrc.play.HeaderCarrierConverter.fromHeadersAndSession
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.play.audit.model.ExtendedDataEvent
 import uk.gov.hmrc.play.bootstrap.controller.BaseController
+import uk.gov.hmrc.play.audit.AuditExtensions.auditHeaderCarrier
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -49,7 +50,7 @@ trait ErrorHandling {
   def shutteringErrorWrapper(func: => Future[mvc.Result])(implicit hc: HeaderCarrier): Future[Result] = {
     if (shuttering.shuttered) {
       Future successful ServiceUnavailable(
-        Json.obj("shuttered" -> shuttering.shuttered,
+        obj("shuttered" -> shuttering.shuttered,
           "title" -> shuttering.title,
           "messages" -> shuttering.messages))
     } else {
@@ -126,15 +127,18 @@ class LiveTaxCreditsSummaryController @Inject()(override val authConnector: Auth
         implicit val hc: HeaderCarrier = fromHeadersAndSession(request.headers, None)
         shutteringErrorWrapper {
           service.getTaxCreditsSummaryResponse(nino).map { summary =>
-            sendAuditEvent(nino, summary)
+            sendAuditEvent(nino, summary, request.path)
             Ok(toJson(summary))
           }
         }
     }
 
-  private def sendAuditEvent(nino: Nino, response: TaxCreditsSummaryResponse): Unit = {
+  private def sendAuditEvent(nino: Nino, response: TaxCreditsSummaryResponse, path: String)(implicit hc: HeaderCarrier): Unit = {
     auditConnector.sendExtendedEvent(
       ExtendedDataEvent(
-        appName, "TaxCreditsSummaryResponse", detail = Json.obj("nino" -> nino.value, "summaryData" -> response)))
+        appName,
+        "TaxCreditsSummaryResponse",
+        tags = hc.toAuditTags("view-tax-credit-summary", path),
+        detail = obj("nino" -> nino.value, "summaryData" -> response)))
   }
 }

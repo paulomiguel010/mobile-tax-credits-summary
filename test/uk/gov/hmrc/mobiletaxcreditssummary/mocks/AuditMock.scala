@@ -32,12 +32,18 @@ import scala.concurrent.{ExecutionContext, Future}
 trait AuditMock extends MockFactory {
   def dataEventWith(auditSource: String,
                     auditType: String,
-                    tags: Map[String, String],
+                    transactionName: String,
                     detail: JsValue): MatcherBase = {
     argThat((dataEvent: ExtendedDataEvent) => {
       dataEvent.auditSource.equals(auditSource) &&
         dataEvent.auditType.equals(auditType) &&
-        dataEvent.tags.equals(tags) &&
+        dataEvent.tags("transactionName").equals(transactionName) &&
+        dataEvent.tags.get("path").isDefined &&
+        dataEvent.tags.get("clientIP").isDefined &&
+        dataEvent.tags.get("clientPort").isDefined &&
+        dataEvent.tags.get("X-Request-ID").isDefined &&
+        dataEvent.tags.get("X-Session-ID").isDefined &&
+        dataEvent.tags.get("Unexpected").isEmpty &&
         dataEvent.detail.equals(detail)
     })
   }
@@ -47,7 +53,7 @@ trait AuditMock extends MockFactory {
       dataEventWith(
         "mobile-tax-credits-summary",
         "TaxCreditsSummaryResponse",
-        Map.empty,
+        "view-tax-credit-summary",
         obj("nino" -> nino.value, "summaryData" -> expectedDetails)), *, * ).returning(Future successful Success)
   }
 
