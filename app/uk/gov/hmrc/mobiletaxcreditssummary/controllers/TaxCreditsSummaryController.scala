@@ -33,7 +33,7 @@ import uk.gov.hmrc.mobiletaxcreditssummary.domain.userdata._
 import uk.gov.hmrc.mobiletaxcreditssummary.services.LiveTaxCreditsSummaryService
 import uk.gov.hmrc.play.HeaderCarrierConverter.fromHeadersAndSession
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
-import uk.gov.hmrc.play.audit.model.DataEvent
+import uk.gov.hmrc.play.audit.model.ExtendedDataEvent
 import uk.gov.hmrc.play.bootstrap.controller.BaseController
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -133,10 +133,8 @@ class LiveTaxCreditsSummaryController @Inject()(override val authConnector: Auth
     }
 
   private def sendAuditEvent(nino: Nino, response: TaxCreditsSummaryResponse): Unit = {
-    auditConnector.sendEvent(
-      DataEvent(appName, "TaxCreditsSummaryResponse",
-        tags = Map.empty,
-        detail = Map("nino" -> nino.value,
-          "summaryData" -> Json.toJson(response).toString())))
+    auditConnector.sendExtendedEvent(
+      ExtendedDataEvent(
+        appName, "TaxCreditsSummaryResponse", detail = Json.obj("nino" -> nino.value, "summaryData" -> response)))
   }
 }
