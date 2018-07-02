@@ -35,7 +35,7 @@ class TaxCreditsSummaryServiceSpec extends TestSetup with WithFakeApplication wi
   implicit val auditConnector: AuditConnector = mock[AuditConnector]
   val configuration: Configuration = fakeApplication.injector.instanceOf[Configuration]
 
-  val service = new LiveTaxCreditsSummaryService(taxCreditsBrokerConnector, auditConnector, configuration)
+  val service = new LiveTaxCreditsSummaryService(taxCreditsBrokerConnector)
 
   val exclusionPaymentSummary = PaymentSummary(None, None, None, None, excluded = Some(true))
   val taxCreditsNino = TaxCreditsNino(nino)
@@ -70,7 +70,6 @@ class TaxCreditsSummaryServiceSpec extends TestSetup with WithFakeApplication wi
   "getTaxCreditsSummaryResponse" should {
     "return a non-tax-credits user payload when payment summary gives excluded = true " in {
       mockTaxCreditsBrokerConnectorGetPaymentSummary(exclusionPaymentSummary, taxCreditsNino)
-      mockAuditGetTaxCreditsSummary(Nino(nino))
 
       await(service.getTaxCreditsSummaryResponse(Nino(nino))) shouldBe TaxCreditsSummaryResponse(excluded = false, None)
     }
@@ -80,7 +79,6 @@ class TaxCreditsSummaryServiceSpec extends TestSetup with WithFakeApplication wi
       mockTaxCreditsBrokerConnectorGetChildren(Seq(SarahSmith, JosephSmith, MarySmith, JennySmith, PeterSmith, SimonSmith), taxCreditsNino)
       mockTaxCreditsBrokerConnectorGetPartnerDetails(Some(partnerDetails), taxCreditsNino)
       mockTaxCreditsBrokerConnectorGetPersonalDetails(personalDetails, taxCreditsNino)
-      mockAuditGetTaxCreditsSummary(Nino(nino))
 
       await(service.getTaxCreditsSummaryResponse(Nino(nino))) shouldBe taxCreditsSummary
     }
@@ -90,7 +88,6 @@ class TaxCreditsSummaryServiceSpec extends TestSetup with WithFakeApplication wi
       mockTaxCreditsBrokerConnectorGetChildren(Seq(SarahSmith, JosephSmith, MarySmith, JennySmith, PeterSmith, SimonSmith), taxCreditsNino)
       mockTaxCreditsBrokerConnectorGetPartnerDetails(None, taxCreditsNino)
       mockTaxCreditsBrokerConnectorGetPersonalDetails(personalDetails, taxCreditsNino)
-      mockAuditGetTaxCreditsSummary(Nino(nino))
 
       await(service.getTaxCreditsSummaryResponse(Nino(nino))) shouldBe taxCreditsSummaryNoPartnerDetails
     }
@@ -100,7 +97,6 @@ class TaxCreditsSummaryServiceSpec extends TestSetup with WithFakeApplication wi
       mockTaxCreditsBrokerConnectorGetChildren(Seq.empty, taxCreditsNino)
       mockTaxCreditsBrokerConnectorGetPartnerDetails(Some(partnerDetails), taxCreditsNino)
       mockTaxCreditsBrokerConnectorGetPersonalDetails(personalDetails, taxCreditsNino)
-      mockAuditGetTaxCreditsSummary(Nino(nino))
 
       await(service.getTaxCreditsSummaryResponse(Nino(nino))) shouldBe taxCreditsSummaryNoChildren
     }
@@ -108,8 +104,6 @@ class TaxCreditsSummaryServiceSpec extends TestSetup with WithFakeApplication wi
     "return an excluded user payload when payment summary errors and exclusion returns true" in {
       mockTaxCreditsBrokerConnectorGetPaymentFailure(upstream5xxException, taxCreditsNino)
       mockTaxCreditsBrokerConnectorGetExclusion(Exclusion(true), taxCreditsNino)
-      mockAuditGetTaxCreditsSummary(Nino(nino))
-      mockAuditGetTaxCreditsExclusion(Nino(nino))
 
       await(service.getTaxCreditsSummaryResponse(Nino(nino))) shouldBe TaxCreditsSummaryResponse(excluded = true, None)
     }
@@ -119,7 +113,6 @@ class TaxCreditsSummaryServiceSpec extends TestSetup with WithFakeApplication wi
       mockTaxCreditsBrokerConnectorGetChildrenFailure(upstream5xxException, taxCreditsNino)
       mockTaxCreditsBrokerConnectorGetPartnerDetails(Some(partnerDetails), taxCreditsNino)
       mockTaxCreditsBrokerConnectorGetPersonalDetails(personalDetails, taxCreditsNino)
-      mockAuditGetTaxCreditsSummary(Nino(nino))
 
       await(service.getTaxCreditsSummaryResponse(Nino(nino))) shouldBe taxCreditsSummaryNoClaimants
     }
@@ -129,7 +122,6 @@ class TaxCreditsSummaryServiceSpec extends TestSetup with WithFakeApplication wi
       mockTaxCreditsBrokerConnectorGetChildren(Seq(SarahSmith, JosephSmith, MarySmith, JennySmith, PeterSmith, SimonSmith), taxCreditsNino)
       mockTaxCreditsBrokerConnectorGetPartnerDetails(Some(partnerDetails), taxCreditsNino)
       mockTaxCreditsBrokerConnectorGetPersonalDetailsFailure(upstream4xxException, taxCreditsNino)
-      mockAuditGetTaxCreditsSummary(Nino(nino))
 
       await(service.getTaxCreditsSummaryResponse(Nino(nino))) shouldBe taxCreditsSummaryNoClaimants
     }
@@ -139,7 +131,6 @@ class TaxCreditsSummaryServiceSpec extends TestSetup with WithFakeApplication wi
       mockTaxCreditsBrokerConnectorGetChildren(Seq(SarahSmith, JosephSmith, MarySmith, JennySmith, PeterSmith, SimonSmith), taxCreditsNino)
       mockTaxCreditsBrokerConnectorGetPartnerDetailsFailure(upstream5xxException, taxCreditsNino)
       mockTaxCreditsBrokerConnectorGetPersonalDetails(personalDetails, taxCreditsNino)
-      mockAuditGetTaxCreditsSummary(Nino(nino))
 
       await(service.getTaxCreditsSummaryResponse(Nino(nino))) shouldBe taxCreditsSummaryNoClaimants
     }
@@ -147,8 +138,6 @@ class TaxCreditsSummaryServiceSpec extends TestSetup with WithFakeApplication wi
     "return an error when payment summary fails and exclusion returns false" in {
       mockTaxCreditsBrokerConnectorGetPaymentFailure(upstream5xxException, taxCreditsNino)
       mockTaxCreditsBrokerConnectorGetExclusion(Exclusion(false), taxCreditsNino)
-      mockAuditGetTaxCreditsSummary(Nino(nino))
-      mockAuditGetTaxCreditsExclusion(Nino(nino))
 
       intercept[IllegalStateException] {
         await(service.getTaxCreditsSummaryResponse(Nino(nino)))
@@ -158,8 +147,6 @@ class TaxCreditsSummaryServiceSpec extends TestSetup with WithFakeApplication wi
     "return an error when both payment summary and exclusion error" in {
       mockTaxCreditsBrokerConnectorGetPaymentFailure(upstream5xxException, taxCreditsNino)
       mockTaxCreditsBrokerConnectorGetExclusionFailure(Upstream4xxResponse("blows up for excluded users", 400, 400), taxCreditsNino)
-      mockAuditGetTaxCreditsSummary(Nino(nino))
-      mockAuditGetTaxCreditsExclusion(Nino(nino))
 
       intercept[Upstream4xxResponse] {
         await(service.getTaxCreditsSummaryResponse(Nino(nino)))

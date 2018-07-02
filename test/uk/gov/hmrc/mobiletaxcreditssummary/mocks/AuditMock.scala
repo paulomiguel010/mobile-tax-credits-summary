@@ -18,40 +18,43 @@ package uk.gov.hmrc.mobiletaxcreditssummary.mocks
 
 import org.scalamock.matchers.MatcherBase
 import org.scalamock.scalatest.MockFactory
+import play.api.libs.json.JsValue
+import play.api.libs.json.Json.obj
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.mobiletaxcreditssummary.domain.userdata.TaxCreditsSummaryResponse
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.play.audit.http.connector.AuditResult.Success
-import uk.gov.hmrc.play.audit.model.DataEvent
+import uk.gov.hmrc.play.audit.model.ExtendedDataEvent
 
 import scala.concurrent.{ExecutionContext, Future}
 
 trait AuditMock extends MockFactory {
   def dataEventWith(auditSource: String,
                     auditType: String,
-                    tags: Map[String, String],
-                    detail: Map[String, String]): MatcherBase = {
-    argThat((dataEvent: DataEvent) => {
+                    transactionName: String,
+                    detail: JsValue): MatcherBase = {
+    argThat((dataEvent: ExtendedDataEvent) => {
       dataEvent.auditSource.equals(auditSource) &&
         dataEvent.auditType.equals(auditType) &&
-        dataEvent.tags.equals(tags) &&
+        dataEvent.tags("transactionName").equals(transactionName) &&
+        dataEvent.tags.get("path").isDefined &&
+        dataEvent.tags.get("clientIP").isDefined &&
+        dataEvent.tags.get("clientPort").isDefined &&
+        dataEvent.tags.get("X-Request-ID").isDefined &&
+        dataEvent.tags.get("X-Session-ID").isDefined &&
+        dataEvent.tags.get("Unexpected").isEmpty &&
         dataEvent.detail.equals(detail)
     })
   }
 
-  def mockAudit(nino: Nino, transactionName: String)(implicit auditConnector: AuditConnector): Unit = {
-    (auditConnector.sendEvent(_: DataEvent)(_: HeaderCarrier, _: ExecutionContext)).expects(
+  def mockAudit(nino: Nino, expectedDetails: TaxCreditsSummaryResponse)(implicit auditConnector: AuditConnector): Unit = {
+    (auditConnector.sendExtendedEvent(_: ExtendedDataEvent)(_: HeaderCarrier, _: ExecutionContext)).expects(
       dataEventWith(
         "mobile-tax-credits-summary",
-        "ServiceResponseSent",
-        Map("transactionName" -> transactionName),
-        Map("nino" -> nino.value)), *, * ).returning(Future successful Success)
+        "TaxCreditsSummaryResponse",
+        "view-tax-credit-summary",
+        obj("nino" -> nino.value, "summaryData" -> expectedDetails)), *, * ).returning(Future successful Success)
   }
-
-  def mockAuditGetTaxCreditsExclusion(nino: Nino)(implicit auditConnector: AuditConnector): Unit =
-    mockAudit(nino, "getTaxCreditExclusion")
-
-  def mockAuditGetTaxCreditsSummary(nino: Nino)(implicit auditConnector: AuditConnector): Unit =
-    mockAudit(nino, "getTaxCreditSummary")
 
 }

@@ -36,12 +36,13 @@ class BaseISpec extends UnitSpec with Matchers with OptionValues with WsScalaTes
   protected val acceptJsonHeader: (String, String) = "Accept" -> "application/vnd.hmrc.1.0+json"
 
   def config: Map[String, Any] = Map(
-    "auditing.enabled" -> false,
+    "auditing.enabled" -> true,
     "microservice.services.service-locator.enabled" -> false,
     "microservice.services.auth.port" -> wireMockPort,
     "microservice.services.datastream.port" -> wireMockPort,
     "microservice.services.service-locator.port" -> wireMockPort,
-    "microservice.services.tax-credits-broker.port" -> wireMockPort)
+    "microservice.services.tax-credits-broker.port" -> wireMockPort,
+    "auditing.consumer.baseUri.port" -> wireMockPort)
 
   protected def appBuilder: GuiceApplicationBuilder = new GuiceApplicationBuilder().configure(config)
 

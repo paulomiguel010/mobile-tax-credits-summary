@@ -17,14 +17,11 @@
 package uk.gov.hmrc.mobiletaxcreditssummary.services
 
 import com.google.inject.{Inject, Singleton}
-import play.api.Configuration
-import uk.gov.hmrc.api.service._
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.mobiletaxcreditssummary.connectors._
 import uk.gov.hmrc.mobiletaxcreditssummary.domain._
 import uk.gov.hmrc.mobiletaxcreditssummary.domain.userdata._
-import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -33,9 +30,7 @@ trait TaxCreditsSummaryService {
 }
 
 @Singleton
-class LiveTaxCreditsSummaryService @Inject()(taxCreditsBrokerConnector: TaxCreditsBrokerConnector,
-                                             val auditConnector: AuditConnector,
-                                             val appNameConfiguration: Configuration) extends TaxCreditsSummaryService with Auditor {
+class LiveTaxCreditsSummaryService @Inject()(taxCreditsBrokerConnector: TaxCreditsBrokerConnector) extends TaxCreditsSummaryService {
 
   override def getTaxCreditsSummaryResponse(nino: Nino)(implicit hc: HeaderCarrier, ex: ExecutionContext): Future[TaxCreditsSummaryResponse] = {
     val tcNino = TaxCreditsNino(nino.value)
@@ -59,31 +54,26 @@ class LiveTaxCreditsSummaryService @Inject()(taxCreditsBrokerConnector: TaxCredi
       }
 
       claimants.map(c => TaxCreditsSummaryResponse(taxCreditsSummary = Some(TaxCreditsSummary(paymentSummary, c))))
-
     }
 
     def buildResponseFromPaymentSummary: Future[TaxCreditsSummaryResponse] = {
-      withAudit("getTaxCreditSummary", Map("nino" -> nino.value)) {
-        taxCreditsBrokerConnector.getPaymentSummary(tcNino).flatMap { summary =>
-          if (summary.excluded.getOrElse(false)) {
-            // in the context of getPaymentSummary, 'excluded == true' means a non-tax credits user
-            Future successful TaxCreditsSummaryResponse(excluded = false, None)
-          }
-          else {
-            buildTaxCreditsSummary(summary)
-          }
+      taxCreditsBrokerConnector.getPaymentSummary(tcNino).flatMap { summary =>
+        if (summary.excluded.getOrElse(false)) {
+          // in the context of getPaymentSummary, 'excluded == true' means a non-tax credits user
+          Future successful TaxCreditsSummaryResponse(excluded = false, None)
+        }
+        else {
+          buildTaxCreditsSummary(summary)
         }
       }
     }
 
     def exclusion: Future[TaxCreditsSummaryResponse] = {
-      withAudit("getTaxCreditExclusion", Map("nino" -> nino.value)) {
-        taxCreditsBrokerConnector.getExclusion(tcNino).map(
-          exclusion =>
-            if (exclusion.excluded) TaxCreditsSummaryResponse(excluded = true, None)
-            else throw new IllegalStateException("payment summary call failed but user not excluded")
-        )
-      }
+      taxCreditsBrokerConnector.getExclusion(tcNino).map(
+        exclusion =>
+          if (exclusion.excluded) TaxCreditsSummaryResponse(excluded = true, None)
+          else throw new IllegalStateException("payment summary call failed but user not excluded")
+      )
     }
 
     buildResponseFromPaymentSummary.recoverWith {
