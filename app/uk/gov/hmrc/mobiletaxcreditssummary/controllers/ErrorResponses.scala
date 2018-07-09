@@ -17,18 +17,17 @@
 package uk.gov.hmrc.mobiletaxcreditssummary.controllers
 
 import uk.gov.hmrc.api.controllers.ErrorResponse
-import uk.gov.hmrc.http.HttpException
 
 case object ErrorUnauthorizedNoNino extends ErrorResponse(401, "UNAUTHORIZED", "NINO does not exist on account")
 
 case object ClientRetryRequest extends ErrorResponse(429, "NTC_RETRY", "Client must retry the request.")
 
-class GrantAccessException(message: String) extends HttpException(message, 401)
+case object ErrorUnauthorizedMicroService extends ErrorResponse(401, "UNAUTHORIZED", "Unauthorized to access resource")
 
-class FailToMatchTaxIdOnAuth extends GrantAccessException("Unauthorised! Failure to match URL NINO against Auth NINO")
+case object ErrorForbidden extends ErrorResponse(403, "FORBIDDEN", "Access Denied")
 
-class NinoNotFoundOnAccount extends GrantAccessException("Unauthorised! NINO not found on account!")
+class FailToMatchTaxIdOnAuth extends Exception
 
-class AccountWithLowCL extends GrantAccessException("Unauthorised! Account with low CL!")
+class NinoNotFoundOnAccount extends Exception
 
-class AccountWithWeakCredStrength(message: String) extends uk.gov.hmrc.http.HttpException(message, 401)
+class AccountWithLowCL extends Exception

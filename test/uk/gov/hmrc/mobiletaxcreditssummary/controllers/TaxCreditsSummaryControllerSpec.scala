@@ -47,10 +47,10 @@ class TaxCreditsSummaryControllerSpec extends TestSetup with WithFakeApplication
       contentAsJson(result) shouldBe toJson(expectedResult)
     }
 
-    "return 401 when the nino in the request does not match the authority nino" in {
+    "return 403 when the nino in the request does not match the authority nino" in {
       mockAuthorisationGrantAccess(Some(nino) and L200)
 
-      status(await(controller.taxCreditsSummary(incorrectNino)(emptyRequestWithAcceptHeader(renewalReference, Nino(nino))))) shouldBe 401
+      status(await(controller.taxCreditsSummary(incorrectNino)(emptyRequestWithAcceptHeader(renewalReference, Nino(nino))))) shouldBe 403
     }
 
     "return 500 given a service error" in {
