@@ -26,7 +26,6 @@ import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, NotFoundException, ServiceUnavailableException}
 import uk.gov.hmrc.mobiletaxcreditssummary.controllers.action.AccessControl
-import uk.gov.hmrc.mobiletaxcreditssummary.domain._
 import uk.gov.hmrc.mobiletaxcreditssummary.domain.userdata._
 import uk.gov.hmrc.mobiletaxcreditssummary.services.LiveTaxCreditsSummaryService
 import uk.gov.hmrc.play.HeaderCarrierConverter.fromHeadersAndSession
@@ -41,30 +40,21 @@ import scala.concurrent.Future
 trait ErrorHandling {
   self: BaseController =>
 
-  val shuttering: Shuttering
-
   def notFound: Result = Status(ErrorNotFound.httpStatusCode)(toJson(ErrorNotFound))
 
-  def shutteringErrorWrapper(func: => Future[mvc.Result])(implicit hc: HeaderCarrier): Future[Result] = {
-    if (shuttering.shuttered) {
-      Future successful ServiceUnavailable(
-        obj("shuttered" -> shuttering.shuttered,
-          "title" -> shuttering.title,
-          "messages" -> shuttering.messages))
-    } else {
-      func.recover {
-        case _: NotFoundException => notFound
+  def errorWrapper(func: => Future[mvc.Result])(implicit hc: HeaderCarrier): Future[Result] = {
+    func.recover {
+      case _: NotFoundException => notFound
 
-        case ex: ServiceUnavailableException =>
-          // The hod can return a 503 HTTP status which is translated to a 429 response code.
-          // The 503 HTTP status code must only be returned from the API gateway and not from downstream API's.
-          Logger.error(s"ServiceUnavailableException reported: ${ex.getMessage}", ex)
-          Status(ClientRetryRequest.httpStatusCode)(toJson(ClientRetryRequest))
+      case ex: ServiceUnavailableException =>
+        // The hod can return a 503 HTTP status which is translated to a 429 response code.
+        // The 503 HTTP status code must only be returned from the API gateway and not from downstream API's.
+        Logger.error(s"ServiceUnavailableException reported: ${ex.getMessage}", ex)
+        Status(ClientRetryRequest.httpStatusCode)(toJson(ClientRetryRequest))
 
-        case e: Throwable =>
-          Logger.error(s"Internal server error: ${e.getMessage}", e)
-          Status(ErrorInternalServerError.httpStatusCode)(toJson(ErrorInternalServerError))
-      }
+      case e: Throwable =>
+        Logger.error(s"Internal server error: ${e.getMessage}", e)
+        Status(ErrorInternalServerError.httpStatusCode)(toJson(ErrorInternalServerError))
     }
   }
 }
@@ -73,25 +63,38 @@ trait TaxCreditsSummaryController extends BaseController {
 
   def taxCreditsSummary(nino: Nino, journeyId: Option[String] = None): Action[AnyContent]
 
+  val shutteredMessage: String = ???
+
+  lazy val shutteredTaxCreditsSummaryResponse: Result =
+    Ok(toJson(
+      TaxCreditsSummaryResponse(
+        excluded = false,
+        Some(TaxCreditsSummary(ShutteredPaymentSummary(Some(shutteredMessage.replaceAll("_", " "))), None)))))
 }
 
 @Singleton
 class LiveTaxCreditsSummaryController @Inject()(override val authConnector: AuthConnector,
                                                 @Named("controllers.confidenceLevel") override val confLevel: Int,
                                                 val service: LiveTaxCreditsSummaryService,
-                                                override val shuttering: Shuttering,
                                                 val auditConnector: AuditConnector,
-                                                val appNameConfiguration: Configuration)
+                                                val appNameConfiguration: Configuration,
+                                                @Named("tax-credits-broker.shuttered") val shuttered: Boolean = false,
+                                                @Named("tax-credits-broker.shutteredMessage") override val shutteredMessage: String = "")
   extends TaxCreditsSummaryController with AccessControl with ErrorHandling with Auditor {
 
   override final def taxCreditsSummary(nino: Nino, journeyId: Option[String] = None): Action[AnyContent] =
     validateAcceptWithAuth(acceptHeaderValidationRules, Option(nino)).async {
       implicit request =>
         implicit val hc: HeaderCarrier = fromHeadersAndSession(request.headers, None)
-        shutteringErrorWrapper {
-          service.getTaxCreditsSummaryResponse(nino).map { summary =>
-            sendAuditEvent(nino, summary, request.path)
-            Ok(toJson(summary))
+
+        errorWrapper {
+          if (shuttered) {
+            Future successful shutteredTaxCreditsSummaryResponse
+          } else {
+            service.getTaxCreditsSummaryResponse(nino).map { summary =>
+              sendAuditEvent(nino, summary, request.path)
+              Ok(toJson(summary))
+            }
           }
         }
     }

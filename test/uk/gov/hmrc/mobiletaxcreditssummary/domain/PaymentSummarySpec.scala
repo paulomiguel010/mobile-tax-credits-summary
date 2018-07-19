@@ -18,7 +18,7 @@ package uk.gov.hmrc.mobiletaxcreditssummary.domain
 
 import org.joda.time.DateTime
 import play.api.libs.json.{JsSuccess, Json}
-import uk.gov.hmrc.mobiletaxcreditssummary.domain.userdata.{FuturePayment, PastPayment, PaymentSummary}
+import uk.gov.hmrc.mobiletaxcreditssummary.domain.userdata.{AbstractPaymentSummary, FuturePayment, PastPayment, PaymentSummary}
 import uk.gov.hmrc.play.test.{UnitSpec, WithFakeApplication}
 
 class PaymentSummarySpec extends UnitSpec with WithFakeApplication {
@@ -60,7 +60,7 @@ class PaymentSummarySpec extends UnitSpec with WithFakeApplication {
       val request =
         """{"paymentEnabled":true}""".stripMargin
 
-      val response = Json.parse(request).validate[PaymentSummary]
+      val response = Json.parse(request).validate[AbstractPaymentSummary]
       val paymentSummary = response match {
         case success: JsSuccess[PaymentSummary] =>
           success.get
@@ -96,7 +96,7 @@ class PaymentSummarySpec extends UnitSpec with WithFakeApplication {
 
       val request = s"""{$ctc, "paymentEnabled": true}""".stripMargin
       val expectedResponse = Json.stringify(Json.parse(s"""{ $ctc, "paymentEnabled": true, $totalsByDate }"""))
-      val response = Json.parse(request).validate[PaymentSummary]
+      val response = Json.parse(request).validate[AbstractPaymentSummary]
       val paymentSummary = response match {
         case success: JsSuccess[PaymentSummary] =>
           success.get
@@ -133,7 +133,7 @@ class PaymentSummarySpec extends UnitSpec with WithFakeApplication {
 
       val request = s"""{$wtc,"paymentEnabled": true}""".stripMargin
       val expectedResponse = Json.stringify(Json.parse(s"""{ $wtc, "paymentEnabled": true, $totalsByDate }"""))
-      val response = Json.parse(request).validate[PaymentSummary]
+      val response = Json.parse(request).validate[AbstractPaymentSummary]
       val paymentSummary = response match {
         case success: JsSuccess[PaymentSummary] =>
           success.get
@@ -183,7 +183,7 @@ class PaymentSummarySpec extends UnitSpec with WithFakeApplication {
       val request = s"""{ $wtc, $ctc, "paymentEnabled": true}""".stripMargin
       val expectedResponse = Json.stringify(Json.parse(s"""{ $wtc, $ctc, "paymentEnabled": true, $totalsByDate }"""))
 
-      val response = Json.parse(request).validate[PaymentSummary]
+      val response = Json.parse(request).validate[AbstractPaymentSummary]
       val paymentSummary = response match {
         case success: JsSuccess[PaymentSummary] =>
           success.get
@@ -246,7 +246,7 @@ class PaymentSummarySpec extends UnitSpec with WithFakeApplication {
 
       val request = s"""{ $wtc, $ctc, "paymentEnabled": true}""".stripMargin
       val expectedResponse = Json.stringify(Json.parse(s"""{ $wtc, $ctc, "paymentEnabled": true, $totalsByDate, $previousTotalsByDate }"""))
-      val response = Json.parse(request).validate[PaymentSummary]
+      val response = Json.parse(request).validate[AbstractPaymentSummary]
       val paymentSummary = response match {
         case success: JsSuccess[PaymentSummary] =>
           success.get
@@ -309,7 +309,7 @@ class PaymentSummarySpec extends UnitSpec with WithFakeApplication {
 
       val request = s"""{ $wtc, $ctc, "paymentEnabled": true}""".stripMargin
       val expectedResponse = Json.stringify(Json.parse(s"""{ $wtc, $ctc, "paymentEnabled": true, $totalsByDate, $previousTotalsByDate }"""))
-      val response = Json.parse(request).validate[PaymentSummary]
+      val response = Json.parse(request).validate[AbstractPaymentSummary]
       val paymentSummary = response match {
         case success: JsSuccess[PaymentSummary] =>
           success.get
@@ -390,7 +390,7 @@ class PaymentSummarySpec extends UnitSpec with WithFakeApplication {
 
       val request = s"""{ $wtc, $ctc, "paymentEnabled": true}""".stripMargin
       val expectedResponse = Json.stringify(Json.parse(s"""{ $wtc, $ctc, "paymentEnabled": true, $totalsByDate, $previousTotalsByDate }"""))
-      val response = Json.parse(request).validate[PaymentSummary]
+      val response = Json.parse(request).validate[AbstractPaymentSummary]
       val paymentSummary = response match {
         case success: JsSuccess[PaymentSummary] =>
           success.get
@@ -444,7 +444,7 @@ class PaymentSummarySpec extends UnitSpec with WithFakeApplication {
          |"informationMessage": "We are currently working out your payments as your child is changing their education or training. This should be done by 7 September ${DateTime.now.year.get}. If your child is staying in education or training, update their details on GOV.UK.",
          |$totalsByDate
          |}""".stripMargin))
-    val response = Json.parse(request).validate[PaymentSummary]
+    val response = Json.parse(request).validate[AbstractPaymentSummary]
     val paymentSummary = response match {
       case success: JsSuccess[PaymentSummary] =>
         success.get

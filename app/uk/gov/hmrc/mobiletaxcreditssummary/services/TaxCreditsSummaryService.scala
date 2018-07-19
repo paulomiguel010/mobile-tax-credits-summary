@@ -35,7 +35,7 @@ class LiveTaxCreditsSummaryService @Inject()(taxCreditsBrokerConnector: TaxCredi
   override def getTaxCreditsSummaryResponse(nino: Nino)(implicit hc: HeaderCarrier, ex: ExecutionContext): Future[TaxCreditsSummaryResponse] = {
     val tcNino = TaxCreditsNino(nino.value)
 
-    def buildTaxCreditsSummary(paymentSummary: PaymentSummary): Future[TaxCreditsSummaryResponse] = {
+    def buildTaxCreditsSummary(paymentSummary: AbstractPaymentSummary): Future[TaxCreditsSummaryResponse] = {
       def getChildrenAge16AndUnder: Future[Seq[Person]] = {
         taxCreditsBrokerConnector.getChildren(tcNino).map(children =>
           Child.getEligibleChildren(children))

@@ -16,28 +16,21 @@
 
 package uk.gov.hmrc.mobiletaxcreditssummary.controllers
 
-import javax.inject.Singleton
+import javax.inject.{Named, Singleton}
 import play.api.libs.json.Json
 import play.api.libs.json.Json.toJson
 import play.api.mvc._
 import uk.gov.hmrc.api.controllers._
 import uk.gov.hmrc.api.sandbox.FileResource
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.mobiletaxcreditssummary.domain._
 import uk.gov.hmrc.mobiletaxcreditssummary.domain.userdata._
 
 import scala.concurrent.Future
 
 @Singleton
-class SandboxTaxCreditsSummaryController() extends TaxCreditsSummaryController with FileResource with HeaderValidator {
-  val shuttering =
-    ConfiguredShuttering(
-      shuttered = true,
-      "Service Unavailable",
-      Seq(
-        "You'll be able to use the app to manage your tax credits at 9am on Monday 29 May 2017.",
-        "Go to GOV UK to <a href=“https://www.gov.uk“>manage your tax credits online</a>."))
-
+class SandboxTaxCreditsSummaryController(
+  @Named("tax-credits-broker.shutteredMessage") override val shutteredMessage: String = "")
+    extends TaxCreditsSummaryController with FileResource with HeaderValidator {
   override final def taxCreditsSummary(nino: Nino, journeyId: Option[String] = None): Action[AnyContent] =
     validateAccept(acceptHeaderValidationRules).async {
       implicit request =>
@@ -47,7 +40,7 @@ class SandboxTaxCreditsSummaryController() extends TaxCreditsSummaryController w
           case Some("ERROR-401") => Unauthorized
           case Some("ERROR-403") => Forbidden
           case Some("ERROR-500") => InternalServerError
-          case Some("SHUTTERED") => ServiceUnavailable(toJson(shuttering))
+          case Some("SHUTTERED") => shutteredTaxCreditsSummaryResponse
           case Some("CLAIMANTS_FAILURE") =>
             val resource: String = findResource(s"/resources/taxcreditssummary/${nino.value}.json")
               .getOrElse(throw new IllegalArgumentException("Resource not found!"))
