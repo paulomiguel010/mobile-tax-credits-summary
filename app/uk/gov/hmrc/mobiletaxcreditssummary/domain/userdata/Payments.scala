@@ -22,16 +22,12 @@ import play.api.libs.functional.syntax._
 import play.api.libs.json._
 import uk.gov.hmrc.mobiletaxcreditssummary.domain.userdata.PaymentReadWriteUtils.{paymentReads, paymentWrites}
 
-case class PaymentSummary(
-  workingTaxCredit: Option[PaymentSection], childTaxCredit: Option[PaymentSection],
-  paymentEnabled: Option[Boolean] = Some(false), specialCircumstances: Option[String] = None,
-  excluded: Option[Boolean] = None) {
-
-  def informationMessage: Option[String] = {
-    if (specialCircumstances.isDefined)
-      Some(s"We are currently working out your payments as your child is changing their education or training. This should be done by 7 September ${DateTime.now.year.get}. If your child is staying in education or training, update their details on GOV.UK.")
-    else None
-  }
+sealed abstract class AbstractPaymentSummary( val workingTaxCredit: Option[PaymentSection],
+                                              val childTaxCredit: Option[PaymentSection],
+                                              val paymentEnabled: Option[Boolean],
+                                              val specialCircumstances: Option[String],
+                                              val excluded: Option[Boolean] = None) {
+  def informationMessage: Option[String] = ???
 
   def totalsByDate: Option[List[Total]] = {
     total(workingTaxCredit.map(_.paymentSeq).getOrElse(Seq.empty)
@@ -51,6 +47,29 @@ case class PaymentSummary(
         .foldLeft(BigDecimal(0))(_ + _.amount), date)).toList)
     }
   }
+}
+
+case class PaymentSummary( override val workingTaxCredit: Option[PaymentSection],
+                           override val childTaxCredit: Option[PaymentSection],
+                           override val paymentEnabled: Option[Boolean] = Some(false),
+                           override val specialCircumstances: Option[String] = None,
+                           override val excluded: Option[Boolean] = None)
+  extends AbstractPaymentSummary(workingTaxCredit, childTaxCredit, paymentEnabled, specialCircumstances){
+
+  override def informationMessage: Option[String] = {
+    if (specialCircumstances.isDefined)
+      Some(s"We are currently working out your payments as your child is changing their education or training. This should be done by 7 September ${DateTime.now.year.get}. If your child is staying in education or training, update their details on GOV.UK.")
+    else None
+  }
+}
+
+case class ShutteredPaymentSummary(override val informationMessage: Option[String])
+  extends AbstractPaymentSummary(
+    Some(PaymentSection(List.empty, "weekly")),
+    Some(PaymentSection(List.empty, "weekly")),
+    paymentEnabled = Some(true),
+    specialCircumstances = None) {
+  override def totalsByDate: Option[List[Total]] = Some(List.empty)
 }
 
 case class PaymentSection(paymentSeq: List[FuturePayment], paymentFrequency: String,
@@ -135,11 +154,11 @@ object Total {
   implicit val formats: OFormat[Total] = Json.format[Total]
 }
 
-object PaymentSummary {
+object AbstractPaymentSummary {
 
   def key: String = "payment-data"
 
-  implicit val reads: Reads[PaymentSummary] = (
+  implicit val reads: Reads[AbstractPaymentSummary] = (
     (JsPath \ "workingTaxCredit").readNullable[PaymentSection] and
       (JsPath \ "childTaxCredit").readNullable[PaymentSection] and
       (JsPath \ "paymentEnabled").readNullable[Boolean] and
@@ -147,9 +166,9 @@ object PaymentSummary {
       (JsPath \ "excluded").readNullable[Boolean]
     ) (PaymentSummary.apply _)
 
-  implicit val writes: Writes[PaymentSummary] = new Writes[PaymentSummary] {
+  implicit val writes: Writes[AbstractPaymentSummary] = new Writes[AbstractPaymentSummary] {
 
-    def writes(paymentSummary: PaymentSummary): JsObject = {
+    def writes(paymentSummary: AbstractPaymentSummary): JsObject = {
       val paymentSummaryWrites = (
         (__ \ "workingTaxCredit").writeNullable[PaymentSection] ~
           (__ \ "childTaxCredit").writeNullable[PaymentSection] ~

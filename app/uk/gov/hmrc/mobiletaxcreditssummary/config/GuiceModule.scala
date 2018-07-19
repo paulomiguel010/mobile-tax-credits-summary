@@ -25,7 +25,6 @@ import uk.gov.hmrc.api.connector.ServiceLocatorConnector
 import uk.gov.hmrc.api.controllers.DocumentationController
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http.CoreGet
-import uk.gov.hmrc.mobiletaxcreditssummary.domain.{ConfiguredShuttering, Shuttering}
 import uk.gov.hmrc.mobiletaxcreditssummary.tasks.ServiceLocatorRegistrationTask
 import uk.gov.hmrc.play.bootstrap.auth.DefaultAuthConnector
 import uk.gov.hmrc.play.bootstrap.http.HttpClient
@@ -44,10 +43,10 @@ class GuiceModule(environment: Environment, configuration: Configuration) extend
     bind(classOf[DocumentationController]).toInstance(DocumentationController)
     bind(classOf[ServiceLocatorRegistrationTask]).asEagerSingleton()
 
-    bindShuttering()
-
     bindConfigInt("controllers.confidenceLevel")
     bindConfigString("appUrl", "appUrl")
+    bindConfigBoolean("tax-credits-broker.shuttered", "microservice.services.tax-credits-broker.shuttered")
+    bindConfigString( "tax-credits-broker.shutteredMessage", "microservice.services.tax-credits-broker.shutteredMessage")
 
     bind(classOf[String]).annotatedWith(named("tax-credits-broker")).toInstance(baseUrl("tax-credits-broker"))
   }
@@ -70,16 +69,6 @@ class GuiceModule(environment: Environment, configuration: Configuration) extend
       .to(configuration.underlying.getString(path))
   }
 
-  private def bindShuttering(): Unit = {
-    def getDecodedConfig(path: String) = Base64.decode(configuration.underlying.getString(path))
-
-    val shuttered = configuration.underlying.getBoolean("shuttering.shuttered")
-    val title = getDecodedConfig("shuttering.title")
-    val message1 = getDecodedConfig("shuttering.message1")
-    val message2 = getDecodedConfig("shuttering.message2")
-
-    val messages = if(message2.length < 1) Seq(message1) else Seq(message1, message2)
-
-    bind(classOf[Shuttering]).toInstance(ConfiguredShuttering(shuttered, title, messages))
-  }
+  private def bindConfigBoolean(name: String, path: String): Unit =
+    bindConstant().annotatedWith(named(name)).to(configuration.underlying.getBoolean(path))
 }

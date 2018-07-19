@@ -32,11 +32,10 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class TaxCreditsSummaryControllerSpec extends TestSetup with WithFakeApplication with FileResource {
   "tax credits summary live" should {
-    val controller = new LiveTaxCreditsSummaryController(mockAuthConnector, 200, mockService, mockShuttering, mockAuditConnector, mockConfiguration)
+    val controller = new LiveTaxCreditsSummaryController(mockAuthConnector, 200, mockService, mockAuditConnector, mockConfiguration)
     "process the request successfully and filter children older than 20 and where deceased flags are active and user is not excluded" in {
       val expectedResult = TaxCreditsSummaryResponse(excluded = false, Some(TaxCreditsSummary(paymentSummary, Some(claimants))))
 
-      mockNotShuttered()
       mockAuthorisationGrantAccess(Some(nino) and L200)
       mockAudit(Nino(nino), expectedResult)
       (mockService.getTaxCreditsSummaryResponse(_: Nino)(_: HeaderCarrier, _: ExecutionContext)).
@@ -55,7 +54,6 @@ class TaxCreditsSummaryControllerSpec extends TestSetup with WithFakeApplication
 
     "return 500 given a service error" in {
       mockAuthorisationGrantAccess(Some(nino) and L200)
-      mockNotShuttered()
 
       (mockService.getTaxCreditsSummaryResponse(_: Nino)(_: HeaderCarrier, _: ExecutionContext)).
         expects(Nino(nino), *, *).returning(Future failed Upstream5xxResponse("error", 500, 500))
@@ -66,7 +64,6 @@ class TaxCreditsSummaryControllerSpec extends TestSetup with WithFakeApplication
     "return the summary successfully when journeyId is supplied and user is not excluded" in {
       val expectedResult = TaxCreditsSummaryResponse(excluded = false, Some(TaxCreditsSummary(paymentSummary, Some(claimants))))
 
-      mockNotShuttered()
       mockAuthorisationGrantAccess(Some(nino) and L200)
       mockAudit(Nino(nino), expectedResult)
       (mockService.getTaxCreditsSummaryResponse(_: Nino)(_: HeaderCarrier, _: ExecutionContext)).
