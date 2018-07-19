@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.mobiletaxcreditssummary.controllers
 
-import javax.inject.{Named, Singleton}
+import javax.inject.{Inject, Named, Singleton}
 import play.api.libs.json.Json
 import play.api.libs.json.Json.toJson
 import play.api.mvc._
@@ -28,7 +28,7 @@ import uk.gov.hmrc.mobiletaxcreditssummary.domain.userdata._
 import scala.concurrent.Future
 
 @Singleton
-class SandboxTaxCreditsSummaryController(
+class SandboxTaxCreditsSummaryController @Inject()(
   @Named("tax-credits-broker.shutteredMessage") val shutteredMessage: String = "")
     extends TaxCreditsSummaryController with FileResource with HeaderValidator {
   override final def taxCreditsSummary(nino: Nino, journeyId: Option[String] = None): Action[AnyContent] =

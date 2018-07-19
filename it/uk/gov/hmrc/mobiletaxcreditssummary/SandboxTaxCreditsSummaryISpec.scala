@@ -16,10 +16,11 @@
 
 package uk.gov.hmrc.mobiletaxcreditssummary
 
-import play.api.libs.json.{JsArray, JsString, JsValue}
+import play.api.libs.json.Json.toJson
 import play.api.libs.ws.{WSRequest, WSResponse}
 import uk.gov.hmrc.api.sandbox.FileResource
 import uk.gov.hmrc.domain.Nino
+import uk.gov.hmrc.mobiletaxcreditssummary.domain.userdata.{ShutteredPaymentSummary, TaxCreditsSummary, TaxCreditsSummaryResponse}
 import uk.gov.hmrc.mobiletaxcreditssummary.support.BaseISpec
 
 class SandboxTaxCreditsSummaryISpec extends BaseISpec with FileResource {
@@ -90,15 +91,15 @@ class SandboxTaxCreditsSummaryISpec extends BaseISpec with FileResource {
     "return 503 and a shutter response where SANDBOX-CONTROL is SHUTTERED" in {
       val response = await(request(sandboxNino).withHeaders(mobileHeader, "SANDBOX-CONTROL" -> "SHUTTERED").get())
 
-      response.status shouldBe 503
+      response.status shouldBe 200
 
-      (response.json \ "shuttered").as[Boolean] shouldBe true
-      (response.json \ "title").as[String] shouldBe "Service Unavailable"
-
-      val messages: JsArray = (response.json \ "messages").as[JsArray]
-      messages.value.size shouldBe 2
-      messages(0).as[JsString].value shouldBe "You'll be able to use the app to manage your tax credits at 9am on Monday 29 May 2017."
-      messages(1).as[JsString].value shouldBe "Go to GOV UK to <a href=“https://www.gov.uk“>manage your tax credits online</a>."
+      response.json shouldBe toJson(
+        TaxCreditsSummaryResponse(
+          excluded = false,
+          Some(TaxCreditsSummary(
+            ShutteredPaymentSummary(
+              Some("Your tax credits payment information is currently unavailable. You can still renew your tax credits using the button above.")),
+            None))))
     }
   }
 }
