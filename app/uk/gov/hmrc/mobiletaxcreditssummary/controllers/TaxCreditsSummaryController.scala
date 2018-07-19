@@ -63,9 +63,7 @@ trait TaxCreditsSummaryController extends BaseController {
 
   def taxCreditsSummary(nino: Nino, journeyId: Option[String] = None): Action[AnyContent]
 
-  val shutteredMessage: String = ???
-
-  lazy val shutteredTaxCreditsSummaryResponse: Result =
+  def shutteredTaxCreditsSummaryResponse(shutteredMessage: String): Result =
     Ok(toJson(
       TaxCreditsSummaryResponse(
         excluded = false,
@@ -79,7 +77,7 @@ class LiveTaxCreditsSummaryController @Inject()(override val authConnector: Auth
                                                 val auditConnector: AuditConnector,
                                                 val appNameConfiguration: Configuration,
                                                 @Named("tax-credits-broker.shuttered") val shuttered: Boolean = false,
-                                                @Named("tax-credits-broker.shutteredMessage") override val shutteredMessage: String = "")
+                                                @Named("tax-credits-broker.shutteredMessage") val shutteredMessage: String = "")
   extends TaxCreditsSummaryController with AccessControl with ErrorHandling with Auditor {
 
   override final def taxCreditsSummary(nino: Nino, journeyId: Option[String] = None): Action[AnyContent] =
@@ -89,7 +87,7 @@ class LiveTaxCreditsSummaryController @Inject()(override val authConnector: Auth
 
         errorWrapper {
           if (shuttered) {
-            Future successful shutteredTaxCreditsSummaryResponse
+            Future successful shutteredTaxCreditsSummaryResponse(shutteredMessage)
           } else {
             service.getTaxCreditsSummaryResponse(nino).map { summary =>
               sendAuditEvent(nino, summary, request.path)
