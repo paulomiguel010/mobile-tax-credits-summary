@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.mobiletaxcreditssummary
 
-import com.github.tomakehurst.wiremock.client.WireMock.{postRequestedFor, urlEqualTo, verify}
 import play.api.libs.json.JsArray
 import play.api.libs.ws.WSRequest
 import uk.gov.hmrc.api.sandbox.FileResource
@@ -29,8 +28,6 @@ class TaxCreditsSummaryISpec extends BaseISpec with FileResource {
 
   "GET /income/:nino/tax-credits/tax-credits-summary " should {
     def request(nino: Nino): WSRequest = wsUrl(s"/income/${nino.value}/tax-credits/tax-credits-summary").withHeaders(acceptJsonHeader)
-
-    def verifyAudit(): Unit = verify(postRequestedFor(urlEqualTo("/write/audit")))
 
     "return a valid response for TAX-CREDITS-USER - check more details on github.com/hmrc/mobile-tax-credits-summary" in {
       grantAccess(nino1.value)
@@ -51,7 +48,6 @@ class TaxCreditsSummaryISpec extends BaseISpec with FileResource {
       ((response.json \\ "claimants").head \ "partnerDetails" \ "surname").as[String] shouldBe "Hunter-Smith"
       (((response.json \\ "claimants").head \ "children") (0) \ "forename").as[String] shouldBe "Sarah"
       (((response.json \\ "claimants").head \ "children") (0) \ "surname").as[String] shouldBe "Smith"
-      verifyAudit()
     }
 
     "return a valid response for EXCLUDED-TAX-CREDITS-USER" in {
@@ -61,7 +57,6 @@ class TaxCreditsSummaryISpec extends BaseISpec with FileResource {
       val response = await(request(nino1).get())
       response.status shouldBe 200
       (response.json \ "excluded").as[Boolean] shouldBe true
-      verifyAudit()
     }
 
     "return a valid response for NON-TAX-CREDITS-USER" in {
@@ -71,7 +66,6 @@ class TaxCreditsSummaryISpec extends BaseISpec with FileResource {
       val response = await(request(nino1).get())
       response.status shouldBe 200
       (response.json \ "excluded").as[Boolean] shouldBe false
-      verifyAudit()
     }
 
     "return a valid response for EXCLUDED USER" in {
@@ -82,7 +76,6 @@ class TaxCreditsSummaryISpec extends BaseISpec with FileResource {
       val response = await(request(nino1).get())
       response.status shouldBe 200
       (response.json \ "excluded").as[Boolean] shouldBe true
-      verifyAudit()
     }
 
     "return a valid response for ERROR-500 - tcs/:nino/exclusion call returns 500" in {
@@ -123,7 +116,6 @@ class TaxCreditsSummaryISpec extends BaseISpec with FileResource {
       (response.json \ "excluded").as[Boolean] shouldBe false
       (response.json \ "taxCreditsSummary" \ "paymentSummary" \ "workingTaxCredit" \ "paymentFrequency").as[String] shouldBe "weekly"
       (response.json \\ "claimants").isEmpty shouldBe true
-      verifyAudit()
     }
 
     "return a valid response for CLAIMANTS_FAILURE - /tcs/:nino/personal-details call returns 500" in {
@@ -139,7 +131,6 @@ class TaxCreditsSummaryISpec extends BaseISpec with FileResource {
       (response.json \ "excluded").as[Boolean] shouldBe false
       (response.json \ "taxCreditsSummary" \ "paymentSummary" \ "workingTaxCredit" \ "paymentFrequency").as[String] shouldBe "weekly"
       (response.json \\ "claimants").isEmpty shouldBe true
-      verifyAudit()
     }
 
     "return a valid response for CLAIMANTS_FAILURE - /tcs/:nino/personal-details call returns 503" in {
@@ -155,7 +146,6 @@ class TaxCreditsSummaryISpec extends BaseISpec with FileResource {
       (response.json \ "excluded").as[Boolean] shouldBe false
       (response.json \ "taxCreditsSummary" \ "paymentSummary" \ "workingTaxCredit" \ "paymentFrequency").as[String] shouldBe "weekly"
       (response.json \\ "claimants").isEmpty shouldBe true
-      verifyAudit()
     }
 
     "return a valid response for CLAIMANTS_FAILURE - /tcs/:nino/partner-details call returns 404" in {
@@ -174,7 +164,6 @@ class TaxCreditsSummaryISpec extends BaseISpec with FileResource {
       (response.json \\ "partnerDetails").isEmpty shouldBe true
       (((response.json \\ "claimants").head \ "children") (0) \ "forename").as[String] shouldBe "Sarah"
       (((response.json \\ "claimants").head \ "children") (0) \ "surname").as[String] shouldBe "Smith"
-      verifyAudit()
     }
 
     "return a valid response for CLAIMANTS_FAILURE - /tcs/:nino/partner-details call returns 500" in {
@@ -189,7 +178,6 @@ class TaxCreditsSummaryISpec extends BaseISpec with FileResource {
       response.status shouldBe 200
       (response.json \ "excluded").as[Boolean] shouldBe false
       (response.json \\ "claimants").isEmpty shouldBe true
-      verifyAudit()
     }
 
     "return a valid response for CLAIMANTS_FAILURE - /tcs/:nino/partner-details call returns 503" in {
@@ -204,7 +192,6 @@ class TaxCreditsSummaryISpec extends BaseISpec with FileResource {
       response.status shouldBe 200
       (response.json \ "excluded").as[Boolean] shouldBe false
       (response.json \\ "claimants").isEmpty shouldBe true
-      verifyAudit()
     }
 
     "return a valid response for CLAIMANTS_FAILURE - /tcs/:nino/children call returns OK with no children" in {
@@ -226,7 +213,6 @@ class TaxCreditsSummaryISpec extends BaseISpec with FileResource {
       ((response.json \\ "claimants").head \ "partnerDetails" \ "forename").as[String] shouldBe "Frederick"
       ((response.json \\ "claimants").head \ "partnerDetails" \ "otherForenames").as[String] shouldBe "Tarquin"
       ((response.json \\ "claimants").head \ "partnerDetails" \ "surname").as[String] shouldBe "Hunter-Smith"
-      verifyAudit()
     }
 
     "return a valid response for CLAIMANTS_FAILURE - /tcs/:nino/children call returns 500" in {
@@ -241,7 +227,6 @@ class TaxCreditsSummaryISpec extends BaseISpec with FileResource {
       response.status shouldBe 200
       (response.json \ "excluded").as[Boolean] shouldBe false
       (response.json \\ "claimants").isEmpty shouldBe true
-      verifyAudit()
     }
 
     "return a valid response for CLAIMANTS_FAILURE - /tcs/:nino/children call returns 503" in {
@@ -256,7 +241,6 @@ class TaxCreditsSummaryISpec extends BaseISpec with FileResource {
       response.status shouldBe 200
       (response.json \ "excluded").as[Boolean] shouldBe false
       (response.json \\ "claimants").isEmpty shouldBe true
-      verifyAudit()
     }
   }
 }
