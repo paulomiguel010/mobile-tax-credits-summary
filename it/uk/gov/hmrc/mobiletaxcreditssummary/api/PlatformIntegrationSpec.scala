@@ -3,6 +3,7 @@ package uk.gov.hmrc.mobiletaxcreditssummary.api
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import org.scalatest.concurrent.Eventually
+import org.scalatest.concurrent.PatienceConfiguration.Timeout
 import org.scalatest.time.{Millis, Span}
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.{JsArray, JsValue}
@@ -51,7 +52,7 @@ class PlatformIntegrationSpec extends BaseISpec with Eventually with PlayRunners
       registerShouldNotHaveBeenCalled()
 
       running(app) {
-        eventually(org.scalatest.concurrent.PatienceConfiguration.Timeout(Span(1000 * 20, Millis))) {
+        eventually(Timeout(Span(1000 * 20, Millis))) {
           registerShouldHaveBeenCalled()
         }
       }
