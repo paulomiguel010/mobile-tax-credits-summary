@@ -3,112 +3,215 @@
     "workingTaxCredit": {
       "paymentSeq": [
         {
-          "amount": 55,
-          "paymentDate": 1509008158781,
+          "amount": 80.29,
+          "paymentDate": date1,
           "oneOffPayment": false,
           "earlyPayment": false
         },
         {
-          "amount": 55,
-          "paymentDate": 1511690158781,
+          "amount": 80.29,
+          "paymentDate": date2,
           "oneOffPayment": false,
           "holidayType": "bankHoliday",
           "earlyPayment": true,
-          "explanatoryText" : "Your payment is early because of UK bank holidays."
+          "explanatoryText": "Your payment is early because of UK bank holidays."
         },
         {
-          "amount": 55,
-          "paymentDate": 1514282158781,
+          "amount": 80.29,
+          "paymentDate": date3,
           "oneOffPayment": true,
           "earlyPayment": false,
-          "explanatoryText" : "This is because of a recent change and is to help you get the right amount of tax credits."
+          "explanatoryText": "This is because of a recent change and is to help you get the right amount of tax credits."
+        },
+        {
+          "amount": 80.29,
+          "paymentDate": date4,
+          "oneOffPayment": false,
+          "earlyPayment": false
+        },
+        {
+          "amount": 80.29,
+          "paymentDate": date5,
+          "oneOffPayment": false,
+          "earlyPayment": false
+        },
+        {
+          "amount": 80.29,
+          "paymentDate": date6,
+          "oneOffPayment": false,
+          "earlyPayment": false
+        },
+        {
+          "amount": 80.29,
+          "paymentDate": date7,
+          "oneOffPayment": false,
+          "earlyPayment": false
+        },
+        {
+          "amount": 80.29,
+          "paymentDate": date8,
+          "oneOffPayment": false,
+          "earlyPayment": false
         }
       ],
       "paymentFrequency": "weekly",
       "previousPaymentSeq": [
         {
-          "amount": 33,
-          "paymentDate": 1503737758781,
+          "amount": 100,
+          "paymentDate": previousDate1,
           "oneOffPayment": false,
           "earlyPayment": false
         },
         {
-          "amount": 43,
-          "paymentDate": 1501059358781,
+          "amount": 100,
+          "paymentDate": previousDate2,
           "oneOffPayment": false,
           "holidayType": "bankHoliday",
           "earlyPayment": true,
-          "explanatoryText" : "Your payment was early because of UK bank holidays."
+          "explanatoryText": "Your payment was early because of UK bank holidays."
         },
         {
-          "amount": 53,
-          "paymentDate": 1498467358781,
+          "amount": 170.31,
+          "paymentDate": previousDate3,
           "oneOffPayment": true,
           "earlyPayment": false,
-          "explanatoryText" : "This was because of a recent change and was to help you get the right amount of tax credits."
+          "explanatoryText": "This was because of a recent change and was to help you get the right amount of tax credits."
         }
       ]
     },
     "childTaxCredit": {
       "paymentSeq": [
         {
-          "amount": 55,
-          "paymentDate": 1509008158781,
+          "amount": 171.84,
+          "paymentDate": date1,
           "oneOffPayment": false,
           "earlyPayment": false
         },
         {
-          "amount": 55,
-          "paymentDate": 1511690158781,
+          "amount": 171.84,
+          "paymentDate": date2,
           "oneOffPayment": false,
           "holidayType": "bankHoliday",
           "earlyPayment": true,
-          "explanatoryText" : "Your payment is early because of UK bank holidays."
+          "explanatoryText": "Your payment is early because of UK bank holidays."
         },
         {
-          "amount": 55,
-          "paymentDate": 1514282158781,
+          "amount": 171.84,
+          "paymentDate": date3,
           "oneOffPayment": true,
           "earlyPayment": false,
-          "explanatoryText" : "This is because of a recent change and is to help you get the right amount of tax credits."
+          "explanatoryText": "This is because of a recent change and is to help you get the right amount of tax credits."
+        },
+        {
+          "amount": 171.84,
+          "paymentDate": date4,
+          "oneOffPayment": false,
+          "earlyPayment": false
+        },
+        {
+          "amount": 171.84,
+          "paymentDate": date5,
+          "oneOffPayment": false,
+          "earlyPayment": false
+        },
+        {
+          "amount": 171.84,
+          "paymentDate": date6,
+          "oneOffPayment": false,
+          "earlyPayment": false
+        },
+        {
+          "amount": 171.84,
+          "paymentDate": date7,
+          "oneOffPayment": false,
+          "earlyPayment": false
+        },
+        {
+          "amount": 171.84,
+          "paymentDate": date8,
+          "oneOffPayment": false,
+          "earlyPayment": false
         }
       ],
-      "paymentFrequency": "weekly"
+      "paymentFrequency": "weekly",
+      "previousPaymentSeq": [
+        {
+          "amount": 140.70,
+          "paymentDate": previousDate1,
+          "oneOffPayment": false,
+          "earlyPayment": false
+        },
+        {
+          "amount": 140.70,
+          "paymentDate": previousDate2,
+          "oneOffPayment": false,
+          "holidayType": "bankHoliday",
+          "earlyPayment": true,
+          "explanatoryText": "Your payment was early because of UK bank holidays."
+        },
+        {
+          "amount": 100,
+          "paymentDate": previousDate3,
+          "oneOffPayment": true,
+          "earlyPayment": false,
+          "explanatoryText": "This was because of a recent change and was to help you get the right amount of tax credits."
+        }
+      ]
     },
     "paymentEnabled": true,
     "totalsByDate": [
       {
-        "amount": 110,
-        "paymentDate": 1509008158781
+        "amount": 252.13,
+        "paymentDate": date1
       },
       {
-        "amount": 110,
-        "paymentDate": 1511690158781
+        "amount": 252.13,
+        "paymentDate": date2
       },
       {
-        "amount": 110,
-        "paymentDate": 1514282158781
+        "amount": 252.13,
+        "paymentDate": date3
+      },
+      {
+        "amount": 252.13,
+        "paymentDate": date4
+      },
+      {
+        "amount": 252.13,
+        "paymentDate": date5
+      },
+      {
+        "amount": 252.13,
+        "paymentDate": date6
+      },
+      {
+        "amount": 252.13,
+        "paymentDate": date7
+      },
+      {
+        "amount": 252.13,
+        "paymentDate": date8
       }
     ],
     "previousTotalsByDate": [
       {
-        "amount": 53,
-        "paymentDate": 1498467358781
+        "amount": 240.70,
+        "paymentDate": previousDate1
       },
       {
-        "amount": 43,
-        "paymentDate": 1501059358781
+        "amount": 240.70,
+        "paymentDate": previousDate2
       },
       {
-        "amount": 33,
-        "paymentDate": 1503737758781
+        "amount": 270.31,
+        "paymentDate": previousDate3
       }
     ]
   },
   "claimants": {
     "personalDetails": {
-      "forename": "firstname",
-      "surname": "surname"
+      "forename": "Nuala",
+      "surname": "O'Shea"
     },
     "partnerDetails": {
       "forename": "Frederick",
