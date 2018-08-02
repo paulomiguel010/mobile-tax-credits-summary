@@ -17,6 +17,7 @@
 package uk.gov.hmrc.mobiletaxcreditssummary.controllers
 
 import javax.inject.{Inject, Named, Singleton}
+import org.joda.time.LocalDate
 import play.api.libs.json.Json
 import play.api.libs.json.Json.toJson
 import play.api.mvc._
@@ -28,9 +29,9 @@ import uk.gov.hmrc.mobiletaxcreditssummary.domain.userdata._
 import scala.concurrent.Future
 
 @Singleton
-class SandboxTaxCreditsSummaryController @Inject()(
-  @Named("tax-credits-broker.shutteredMessage") val shutteredMessage: String = "")
-    extends TaxCreditsSummaryController with FileResource with HeaderValidator {
+class SandboxTaxCreditsSummaryController @Inject()(@Named("tax-credits-broker.shutteredMessage") val shutteredMessage: String = "")
+  extends TaxCreditsSummaryController with FileResource with HeaderValidator {
+
   override final def taxCreditsSummary(nino: Nino, journeyId: Option[String] = None): Action[AnyContent] =
     validateAccept(acceptHeaderValidationRules).async {
       implicit request =>
@@ -44,14 +45,29 @@ class SandboxTaxCreditsSummaryController @Inject()(
           case Some("CLAIMANTS_FAILURE") =>
             val resource: String = findResource(s"/resources/taxcreditssummary/${nino.value}.json")
               .getOrElse(throw new IllegalArgumentException("Resource not found!"))
-            val taxCreditsSummary: TaxCreditsSummary = TaxCreditsSummary(Json.parse(resource).as[TaxCreditsSummary].paymentSummary, None)
+            val taxCreditsSummary: TaxCreditsSummary = TaxCreditsSummary(Json.parse(updateDates(resource)).as[TaxCreditsSummary].paymentSummary, None)
             val response = TaxCreditsSummaryResponse(excluded = false, Some(taxCreditsSummary))
             Ok(toJson(response))
           case _ => //TAX-CREDITS-USER
             val resource: String = findResource(s"/resources/taxcreditssummary/${nino.value}.json")
               .getOrElse(throw new IllegalArgumentException("Resource not found!"))
-            val response = TaxCreditsSummaryResponse(excluded = false, Some(Json.parse(resource).as[TaxCreditsSummary]))
+            val response = TaxCreditsSummaryResponse(excluded = false, Some(Json.parse(updateDates(resource)).as[TaxCreditsSummary]))
             Ok(toJson(response))
         })
     }
+
+  private def updateDates(resource: String): String = {
+    val currentTime = new LocalDate().toDateTimeAtStartOfDay
+    resource.replaceAll("previousDate1", currentTime.minusWeeks(2).getMillis.toString)
+      .replaceAll("previousDate2", currentTime.minusWeeks(1).getMillis.toString)
+      .replaceAll("previousDate3", currentTime.getMillis.toString)
+      .replaceAll("date1", currentTime.plusWeeks(1).getMillis.toString)
+      .replaceAll("date2", currentTime.plusWeeks(2).getMillis.toString)
+      .replaceAll("date3", currentTime.plusWeeks(3).getMillis.toString)
+      .replaceAll("date4", currentTime.plusWeeks(4).getMillis.toString)
+      .replaceAll("date5", currentTime.plusWeeks(5).getMillis.toString)
+      .replaceAll("date6", currentTime.plusWeeks(6).getMillis.toString)
+      .replaceAll("date7", currentTime.plusWeeks(7).getMillis.toString)
+      .replaceAll("date8", currentTime.plusWeeks(8).getMillis.toString)
+  }
 }
