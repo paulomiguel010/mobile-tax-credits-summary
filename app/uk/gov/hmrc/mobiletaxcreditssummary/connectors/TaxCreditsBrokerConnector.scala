@@ -45,6 +45,8 @@ class TaxCreditsBrokerConnector @Inject()(http: CoreGet,
   def getChildren(nino: TaxCreditsNino)(implicit headerCarrier: HeaderCarrier, ex: ExecutionContext): Future[Seq[Child]] =
     http.GET[Children](url(nino, "children")).map(children => children.child)
 
-  def getExclusion(nino: TaxCreditsNino)(implicit headerCarrier: HeaderCarrier, ex: ExecutionContext): Future[Exclusion] =
-    http.GET[Exclusion](url(nino, "exclusion"))
+  def getExclusion(nino: TaxCreditsNino)(implicit headerCarrier: HeaderCarrier, ex: ExecutionContext): Future[Option[Exclusion]] =
+    http.GET[Option[Exclusion]](url(nino, "exclusion")).recover {
+      case _: NotFoundException => None
+    }
 }

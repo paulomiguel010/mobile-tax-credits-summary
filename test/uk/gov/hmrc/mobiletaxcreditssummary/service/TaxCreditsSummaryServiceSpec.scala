@@ -69,12 +69,13 @@ class TaxCreditsSummaryServiceSpec extends TestSetup with WithFakeApplication wi
 
   "getTaxCreditsSummaryResponse" should {
     "return a non-tax-credits user payload when payment summary gives excluded = true " in {
-      mockTaxCreditsBrokerConnectorGetPaymentSummary(exclusionPaymentSummary, taxCreditsNino)
+      mockTaxCreditsBrokerConnectorGetExclusion(None, taxCreditsNino)
 
       await(service.getTaxCreditsSummaryResponse(Nino(nino))) shouldBe TaxCreditsSummaryResponse(excluded = false, None)
     }
 
     "return a tax-credits user payload when a payment summary is returned" in {
+      mockTaxCreditsBrokerConnectorGetExclusion(Some(Exclusion(false)), taxCreditsNino)
       mockTaxCreditsBrokerConnectorGetPaymentSummary(paymentSummary, taxCreditsNino)
       mockTaxCreditsBrokerConnectorGetChildren(Seq(SarahSmith, JosephSmith, MarySmith, JennySmith, PeterSmith, SimonSmith), taxCreditsNino)
       mockTaxCreditsBrokerConnectorGetPartnerDetails(Some(partnerDetails), taxCreditsNino)
@@ -84,6 +85,7 @@ class TaxCreditsSummaryServiceSpec extends TestSetup with WithFakeApplication wi
     }
 
     "return a tax-credits user payload when a payment summary is returned but when there are no partner details" in {
+      mockTaxCreditsBrokerConnectorGetExclusion(Some(Exclusion(false)), taxCreditsNino)
       mockTaxCreditsBrokerConnectorGetPaymentSummary(paymentSummary, taxCreditsNino)
       mockTaxCreditsBrokerConnectorGetChildren(Seq(SarahSmith, JosephSmith, MarySmith, JennySmith, PeterSmith, SimonSmith), taxCreditsNino)
       mockTaxCreditsBrokerConnectorGetPartnerDetails(None, taxCreditsNino)
@@ -93,6 +95,7 @@ class TaxCreditsSummaryServiceSpec extends TestSetup with WithFakeApplication wi
     }
 
     "return a tax-credits user payload when a payment summary is returned but when there are no children" in {
+      mockTaxCreditsBrokerConnectorGetExclusion(Some(Exclusion(false)), taxCreditsNino)
       mockTaxCreditsBrokerConnectorGetPaymentSummary(paymentSummary, taxCreditsNino)
       mockTaxCreditsBrokerConnectorGetChildren(Seq.empty, taxCreditsNino)
       mockTaxCreditsBrokerConnectorGetPartnerDetails(Some(partnerDetails), taxCreditsNino)
@@ -101,14 +104,14 @@ class TaxCreditsSummaryServiceSpec extends TestSetup with WithFakeApplication wi
       await(service.getTaxCreditsSummaryResponse(Nino(nino))) shouldBe taxCreditsSummaryNoChildren
     }
 
-    "return an excluded user payload when payment summary errors and exclusion returns true" in {
-      mockTaxCreditsBrokerConnectorGetPaymentFailure(upstream5xxException, taxCreditsNino)
-      mockTaxCreditsBrokerConnectorGetExclusion(Exclusion(true), taxCreditsNino)
+    "return an excluded user payload when exclusion returns true" in {
+      mockTaxCreditsBrokerConnectorGetExclusion(Some(Exclusion(true)), taxCreditsNino)
 
       await(service.getTaxCreditsSummaryResponse(Nino(nino))) shouldBe TaxCreditsSummaryResponse(excluded = true, None)
     }
 
     "return TaxCreditsSummaryResponse with payment summary but empty claimants when Get Children fails" in {
+      mockTaxCreditsBrokerConnectorGetExclusion(Some(Exclusion(false)), taxCreditsNino)
       mockTaxCreditsBrokerConnectorGetPaymentSummary(paymentSummary, taxCreditsNino)
       mockTaxCreditsBrokerConnectorGetChildrenFailure(upstream5xxException, taxCreditsNino)
       mockTaxCreditsBrokerConnectorGetPartnerDetails(Some(partnerDetails), taxCreditsNino)
@@ -118,6 +121,7 @@ class TaxCreditsSummaryServiceSpec extends TestSetup with WithFakeApplication wi
     }
 
     "return TaxCreditsSummaryResponse with payment summary but empty claimants when Get Personal Details fails" in {
+      mockTaxCreditsBrokerConnectorGetExclusion(Some(Exclusion(false)), taxCreditsNino)
       mockTaxCreditsBrokerConnectorGetPaymentSummary(paymentSummary, taxCreditsNino)
       mockTaxCreditsBrokerConnectorGetChildren(Seq(SarahSmith, JosephSmith, MarySmith, JennySmith, PeterSmith, SimonSmith), taxCreditsNino)
       mockTaxCreditsBrokerConnectorGetPartnerDetails(Some(partnerDetails), taxCreditsNino)
@@ -127,6 +131,7 @@ class TaxCreditsSummaryServiceSpec extends TestSetup with WithFakeApplication wi
     }
 
     "return TaxCreditsSummaryResponse with payment summary but empty claimants when Get Partner Details fails" in {
+      mockTaxCreditsBrokerConnectorGetExclusion(Some(Exclusion(false)), taxCreditsNino)
       mockTaxCreditsBrokerConnectorGetPaymentSummary(paymentSummary, taxCreditsNino)
       mockTaxCreditsBrokerConnectorGetChildren(Seq(SarahSmith, JosephSmith, MarySmith, JennySmith, PeterSmith, SimonSmith), taxCreditsNino)
       mockTaxCreditsBrokerConnectorGetPartnerDetailsFailure(upstream5xxException, taxCreditsNino)
@@ -136,16 +141,15 @@ class TaxCreditsSummaryServiceSpec extends TestSetup with WithFakeApplication wi
     }
 
     "return an error when payment summary fails and exclusion returns false" in {
+      mockTaxCreditsBrokerConnectorGetExclusion(Some(Exclusion(false)), taxCreditsNino)
       mockTaxCreditsBrokerConnectorGetPaymentFailure(upstream5xxException, taxCreditsNino)
-      mockTaxCreditsBrokerConnectorGetExclusion(Exclusion(false), taxCreditsNino)
 
-      intercept[IllegalStateException] {
+      intercept[Upstream5xxResponse] {
         await(service.getTaxCreditsSummaryResponse(Nino(nino)))
       }
     }
 
-    "return an error when both payment summary and exclusion error" in {
-      mockTaxCreditsBrokerConnectorGetPaymentFailure(upstream5xxException, taxCreditsNino)
+    "return an error when exclusion errors" in {
       mockTaxCreditsBrokerConnectorGetExclusionFailure(Upstream4xxResponse("blows up for excluded users", 400, 400), taxCreditsNino)
 
       intercept[Upstream4xxResponse] {
