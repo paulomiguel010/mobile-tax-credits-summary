@@ -131,13 +131,13 @@ class TaxCreditsBrokerSpec extends UnitSpec with ScalaFutures with WithFakeAppli
       await(connector.getChildren(TaxCreditsNino(nino.value))) shouldBe children
     }
 
-    "return exclusion = true when 200 response is received with a valid json payload of exclusion = false" in new Setup {
+    "return exclusion = true when 200 response is received with a valid json payload of exclusion = true" in new Setup {
       override lazy val response: Future[AnyRef with HttpResponse] = http200Exclusion
 
       await(connector.getExclusion(TaxCreditsNino(nino.value))) shouldBe Some(exclusion)
     }
 
-    "return exclusion = false when 200 response is received with a valid json payload of exclusion = true" in new Setup {
+    "return exclusion = false when 200 response is received with a valid json payload of exclusion = false" in new Setup {
       override lazy val response: Future[AnyRef with HttpResponse] = http200NotExcluded
 
       await(connector.getExclusion(TaxCreditsNino(nino.value))) shouldBe Some(notExcluded)
