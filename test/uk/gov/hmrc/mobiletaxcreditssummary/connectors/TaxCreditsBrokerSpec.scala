@@ -56,6 +56,8 @@ class TaxCreditsBrokerSpec extends UnitSpec with ScalaFutures with WithFakeAppli
     lazy val http200Children: Future[AnyRef with HttpResponse] = Future.successful(HttpResponse(200, Some(Json.toJson(tcbChildren))))
     lazy val http200Payment: Future[AnyRef with HttpResponse] = Future.successful(HttpResponse(200, Some(Json.toJson(paymentSummary))))
     lazy val http200Exclusion: Future[AnyRef with HttpResponse] = Future.successful(HttpResponse(200, Some(Json.toJson(exclusion))))
+    lazy val http200NotExcluded: Future[AnyRef with HttpResponse] = Future.successful(HttpResponse(200, Some(Json.toJson(notExcluded))))
+    lazy val http404Exclusion: Future[AnyRef with HttpResponse] = Future.successful(HttpResponse(404, None))
 
 
     val AGE17 = "1999-08-31"
@@ -67,7 +69,6 @@ class TaxCreditsBrokerSpec extends UnitSpec with ScalaFutures with WithFakeAppli
     val MarySmith = Child("Mary", "Smith", new DateTime(AGE19), hasFTNAE = false, hasConnexions = false, isActive = false, None)
 
     val nino = Nino("KM569110B")
-    val address = Address("addressLine1", "addressLine2", Some("addressLine3"), Some("addressLine4"), Some("postcode"))
     val personalDetails = Person(forename = "Nuala", surname = "O'Shea")
     val partnerDetails = Person("Frederick", Some("Tarquin"), "Hunter-Smith")
 
@@ -75,6 +76,7 @@ class TaxCreditsBrokerSpec extends UnitSpec with ScalaFutures with WithFakeAppli
     val tcbChildren = Children(children)
 
     val exclusion = Exclusion(true)
+    val notExcluded = Exclusion(false)
     val serviceUrl = "someUrl"
 
     class TestTaxCreditsBrokerConnector(http: CoreGet) extends TaxCreditsBrokerConnector(http, serviceUrl)
@@ -129,10 +131,22 @@ class TaxCreditsBrokerSpec extends UnitSpec with ScalaFutures with WithFakeAppli
       await(connector.getChildren(TaxCreditsNino(nino.value))) shouldBe children
     }
 
-    "return exclusion when 200 response is received with a valid json payload" in new Setup {
+    "return exclusion = true when 200 response is received with a valid json payload of exclusion = true" in new Setup {
       override lazy val response: Future[AnyRef with HttpResponse] = http200Exclusion
 
-      await(connector.getExclusion(TaxCreditsNino(nino.value))) shouldBe exclusion
+      await(connector.getExclusion(TaxCreditsNino(nino.value))) shouldBe Some(exclusion)
+    }
+
+    "return exclusion = false when 200 response is received with a valid json payload of exclusion = false" in new Setup {
+      override lazy val response: Future[AnyRef with HttpResponse] = http200NotExcluded
+
+      await(connector.getExclusion(TaxCreditsNino(nino.value))) shouldBe Some(notExcluded)
+    }
+
+    "return exclusion = None when 404 response is received" in new Setup {
+      override lazy val response: Future[AnyRef with HttpResponse] = http404Exclusion
+
+      await(connector.getExclusion(TaxCreditsNino(nino.value))) shouldBe None
     }
 
     "return a valid response for getPaymentSummary when a 200 response is received with a valid json payload" in new Setup {

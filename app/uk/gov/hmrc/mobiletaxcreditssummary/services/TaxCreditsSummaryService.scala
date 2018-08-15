@@ -68,16 +68,11 @@ class LiveTaxCreditsSummaryService @Inject()(taxCreditsBrokerConnector: TaxCredi
       }
     }
 
-    def exclusion: Future[TaxCreditsSummaryResponse] = {
-      taxCreditsBrokerConnector.getExclusion(tcNino).map(
-        exclusion =>
-          if (exclusion.excluded) TaxCreditsSummaryResponse(excluded = true, None)
-          else throw new IllegalStateException("payment summary call failed but user not excluded")
-      )
-    }
-
-    buildResponseFromPaymentSummary.recoverWith {
-      case _ => exclusion
+    taxCreditsBrokerConnector.getExclusion(tcNino).flatMap {
+      case Some(exclusion) =>
+        if (exclusion.excluded) Future successful TaxCreditsSummaryResponse(excluded = true, None)
+        else buildResponseFromPaymentSummary
+      case None => Future successful TaxCreditsSummaryResponse(excluded = false, None)
     }
   }
 }
