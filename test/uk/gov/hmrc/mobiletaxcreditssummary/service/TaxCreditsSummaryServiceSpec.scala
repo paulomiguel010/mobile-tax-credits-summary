@@ -68,7 +68,7 @@ class TaxCreditsSummaryServiceSpec extends TestSetup with WithFakeApplication wi
         None)))
 
   "getTaxCreditsSummaryResponse" should {
-    "return a non-tax-credits user payload when payment summary gives excluded = true " in {
+    "return a non-tax-credits user payload when exclusion returns None" in {
       mockTaxCreditsBrokerConnectorGetExclusion(None, taxCreditsNino)
 
       await(service.getTaxCreditsSummaryResponse(Nino(nino))) shouldBe TaxCreditsSummaryResponse(excluded = false, None)
