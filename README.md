@@ -69,3 +69,4 @@ For more information, visit Confluence and see the following page:
 # Definition
 API definition for the service will be available under `/api/definition` endpoint.
 See definition in `/conf/api-definition.json` for the format.
+
