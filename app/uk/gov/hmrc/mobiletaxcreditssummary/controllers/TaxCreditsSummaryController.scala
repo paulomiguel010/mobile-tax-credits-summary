@@ -60,14 +60,7 @@ trait ErrorHandling {
 }
 
 trait TaxCreditsSummaryController extends BaseController {
-
   def taxCreditsSummary(nino: Nino, journeyId: Option[String] = None): Action[AnyContent]
-
-  def shutteredTaxCreditsSummaryResponse(shutteredMessage: String): Result =
-    Ok(toJson(
-      TaxCreditsSummaryResponse(
-        excluded = false,
-        Some(TaxCreditsSummary(ShutteredPaymentSummary(Some(shutteredMessage.replaceAll("_", " "))), None)))))
 }
 
 @Singleton
@@ -75,9 +68,7 @@ class LiveTaxCreditsSummaryController @Inject()(override val authConnector: Auth
                                                 @Named("controllers.confidenceLevel") override val confLevel: Int,
                                                 val service: LiveTaxCreditsSummaryService,
                                                 val auditConnector: AuditConnector,
-                                                val appNameConfiguration: Configuration,
-                                                @Named("tax-credits-broker.shuttered") val shuttered: Boolean = false,
-                                                @Named("tax-credits-broker.shutteredMessage") val shutteredMessage: String = "")
+                                                val appNameConfiguration: Configuration)
   extends TaxCreditsSummaryController with AccessControl with ErrorHandling with Auditor {
 
   override final def taxCreditsSummary(nino: Nino, journeyId: Option[String] = None): Action[AnyContent] =
@@ -86,13 +77,9 @@ class LiveTaxCreditsSummaryController @Inject()(override val authConnector: Auth
         implicit val hc: HeaderCarrier = fromHeadersAndSession(request.headers, None)
 
         errorWrapper {
-          if (shuttered) {
-            Future successful shutteredTaxCreditsSummaryResponse(shutteredMessage)
-          } else {
-            service.getTaxCreditsSummaryResponse(nino).map { summary =>
-              sendAuditEvent(nino, summary, request.path)
-              Ok(toJson(summary))
-            }
+          service.getTaxCreditsSummaryResponse(nino).map { summary =>
+            sendAuditEvent(nino, summary, request.path)
+            Ok(toJson(summary))
           }
         }
     }

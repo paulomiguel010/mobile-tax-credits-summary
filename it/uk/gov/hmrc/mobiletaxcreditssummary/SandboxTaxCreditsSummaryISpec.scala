@@ -16,11 +16,9 @@
 
 package uk.gov.hmrc.mobiletaxcreditssummary
 
-import play.api.libs.json.Json.toJson
 import play.api.libs.ws.{WSRequest, WSResponse}
 import uk.gov.hmrc.api.sandbox.FileResource
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.mobiletaxcreditssummary.domain.userdata.{ShutteredPaymentSummary, TaxCreditsSummary, TaxCreditsSummaryResponse}
 import uk.gov.hmrc.mobiletaxcreditssummary.support.BaseISpec
 
 class SandboxTaxCreditsSummaryISpec extends BaseISpec with FileResource {
@@ -86,20 +84,6 @@ class SandboxTaxCreditsSummaryISpec extends BaseISpec with FileResource {
     "return 500 if there is an error where SANDBOX-CONTROL is ERROR-500" in {
       val response = await(request(sandboxNino).withHeaders(mobileHeader, "SANDBOX-CONTROL" -> "ERROR-500").get())
       response.status shouldBe 500
-    }
-
-    "return 503 and a shutter response where SANDBOX-CONTROL is SHUTTERED" in {
-      val response = await(request(sandboxNino).withHeaders(mobileHeader, "SANDBOX-CONTROL" -> "SHUTTERED").get())
-
-      response.status shouldBe 200
-
-      response.json shouldBe toJson(
-        TaxCreditsSummaryResponse(
-          excluded = false,
-          Some(TaxCreditsSummary(
-            ShutteredPaymentSummary(
-              Some("Your tax credits payment information is currently unavailable. You can still renew your tax credits using the button above.")),
-            None))))
     }
   }
 }
