@@ -49,8 +49,6 @@ class GuiceModule(environment: Environment, configuration: Configuration) extend
 
     bindConfigInt("controllers.confidenceLevel")
     bindConfigString("appUrl", "appUrl")
-    bindConfigBoolean("tax-credits-broker.shuttered", "microservice.services.tax-credits-broker.shuttered")
-    bindConfigString( "tax-credits-broker.shutteredMessage", "microservice.services.tax-credits-broker.shutteredMessage")
 
     bind(classOf[String]).annotatedWith(named("tax-credits-broker")).toInstance(baseUrl("tax-credits-broker"))
 
@@ -75,7 +73,4 @@ class GuiceModule(environment: Environment, configuration: Configuration) extend
     bindConstant().annotatedWith(named(name))
       .to(configuration.underlying.getString(path))
   }
-
-  private def bindConfigBoolean(name: String, path: String): Unit =
-    bindConstant().annotatedWith(named(name)).to(configuration.underlying.getBoolean(path))
 }

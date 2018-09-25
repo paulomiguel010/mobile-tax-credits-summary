@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.mobiletaxcreditssummary.controllers
 
-import javax.inject.{Inject, Named, Singleton}
+import javax.inject.Singleton
 import org.joda.time.LocalDate
 import play.api.libs.json.Json
 import play.api.libs.json.Json.toJson
@@ -29,8 +29,7 @@ import uk.gov.hmrc.mobiletaxcreditssummary.domain.userdata._
 import scala.concurrent.Future
 
 @Singleton
-class SandboxTaxCreditsSummaryController @Inject()(@Named("tax-credits-broker.shutteredMessage") val shutteredMessage: String = "")
-  extends TaxCreditsSummaryController with FileResource with HeaderValidator {
+class SandboxTaxCreditsSummaryController extends TaxCreditsSummaryController with FileResource with HeaderValidator {
 
   override final def taxCreditsSummary(nino: Nino, journeyId: Option[String] = None): Action[AnyContent] =
     validateAccept(acceptHeaderValidationRules).async {
@@ -41,7 +40,6 @@ class SandboxTaxCreditsSummaryController @Inject()(@Named("tax-credits-broker.sh
           case Some("ERROR-401") => Unauthorized
           case Some("ERROR-403") => Forbidden
           case Some("ERROR-500") => InternalServerError
-          case Some("SHUTTERED") => shutteredTaxCreditsSummaryResponse(shutteredMessage)
           case Some("CLAIMANTS_FAILURE") =>
             val resource: String = findResource(s"/resources/taxcreditssummary/${nino.value}.json")
               .getOrElse(throw new IllegalArgumentException("Resource not found!"))

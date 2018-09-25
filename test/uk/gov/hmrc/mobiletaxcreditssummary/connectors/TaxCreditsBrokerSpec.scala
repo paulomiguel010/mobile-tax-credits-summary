@@ -151,13 +151,13 @@ class TaxCreditsBrokerSpec extends UnitSpec with ScalaFutures with WithFakeAppli
 
     "return a valid response for getPaymentSummary when a 200 response is received with a valid json payload" in new Setup {
       override lazy val response: Future[AnyRef with HttpResponse] = http200Payment
-      val result: AbstractPaymentSummary = await(connector.getPaymentSummary(TaxCreditsNino(nino.value)))
+      val result: PaymentSummary = await(connector.getPaymentSummary(TaxCreditsNino(nino.value)))
       result shouldBe paymentSummary
     }
 
     "return excluded payment summary response" in new Setup {
       override lazy val response: Future[AnyRef with HttpResponse] = http200Exclusion
-      val result: AbstractPaymentSummary = await(connector.getPaymentSummary(TaxCreditsNino(nino.value)))
+      val result: PaymentSummary = await(connector.getPaymentSummary(TaxCreditsNino(nino.value)))
       result shouldBe exclusionPaymentSummary
     }
 

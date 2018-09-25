@@ -39,7 +39,6 @@ To test different scenarios, add a header "SANDBOX-CONTROL" with one of the foll
 | "ERROR-401" | Unhappy path, trigger a 401 Unauthorized response |
 | "ERROR-403" | Unhappy path, trigger a 403 Forbidden response |
 | "ERROR-500" | Unhappy path, trigger a 500 Internal Server Error response |
-| "SHUTTERED" | Unhappy path, trigger a 503 Shuttered response |
 | Not set or any other value | Happy path, non-excluded Tax Credits Users |
 
 To start the service locally either use service-manager or clone this repo and use sbt to start:
@@ -51,16 +50,6 @@ To start the service locally either use service-manager or clone this repo and u
 Once its running then to test the default behaviour (non-excluded Tax Credits Users payload):
 ```
 curl -i -H"Accept: application/vnd.hmrc.1.0+json" localhost:8246/sandbox/income/CS700100A/tax-credits/tax-credits-summary
-```
-
-To test the shuttering behaviour:
-```
-curl -i -H"SANDBOX-CONTROL:SHUTTERED" -H"Accept: application/vnd.hmrc.1.0+json" localhost:8246/sandbox/income/CS700100A/tax-credits/tax-credits-summary
-```
-
-To test the same shuttering behaviour using the built-in routing to /sandbox when specifying a test user id in the X-MOBILE-USER-ID
-```
-curl -i -H"SANDBOX-CONTROL:SHUTTERED" -H"Accept: application/vnd.hmrc.1.0+json" -H"X-MOBILE-USER-ID:208606423740" localhost:8246/income/CS700100A/tax-credits/tax-credits-summary 
 ```
 
 For more information, visit Confluence and see the following page:
