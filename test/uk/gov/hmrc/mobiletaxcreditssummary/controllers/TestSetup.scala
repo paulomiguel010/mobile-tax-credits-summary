@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.mobiletaxcreditssummary.controllers
 
-import com.ning.http.util.Base64
 import org.scalamock.scalatest.MockFactory
 import play.api.Configuration
 import play.api.libs.json.{JsValue, Json}
@@ -61,10 +60,6 @@ trait TestSetup extends MockFactory with UnitSpec with WithFakeApplication
   ).withHeaders(
     "Authorization" -> "Some Header"
   )
-
-  def basicAuthString(encodedAuth: String): String = "Basic " + encodedAuth
-
-  def encodedAuth(nino: Nino, tcrRenewalReference: RenewalReference): String = new String(Base64.encode(s"${nino.value}:${tcrRenewalReference.value}".getBytes))
 
   def emptyRequestWithAcceptHeader(renewalsRef: RenewalReference, nino: Nino): FakeRequest[AnyContentAsEmpty.type] =
     FakeRequest().withHeaders(acceptHeader)
