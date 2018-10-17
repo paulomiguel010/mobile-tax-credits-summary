@@ -39,12 +39,12 @@ val compile = Seq(
 )
 
 val test = Seq(
-  "uk.gov.hmrc" %% "hmrctest" % "3.1.0" % Test,
+  "uk.gov.hmrc" %% "hmrctest" % "3.2.0" % Test,
   "org.scalamock" %% "scalamock" % "4.0.0" % Test
 )
 
 val integration = Seq(
-  "uk.gov.hmrc" %% "hmrctest" % "3.1.0" % IntegrationTest,
+  "uk.gov.hmrc" %% "hmrctest" % "3.2.0" % IntegrationTest,
   "com.typesafe.play" %% "play-test" % PlayVersion.current % IntegrationTest,
   "info.cukes" %% "cucumber-scala" % "1.2.5" % IntegrationTest,
   "info.cukes" % "cucumber-junit" % "1.2.5" % IntegrationTest,
