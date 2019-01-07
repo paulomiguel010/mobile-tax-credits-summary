@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 HM Revenue & Customs
+ * Copyright 2019 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@
 
 package uk.gov.hmrc.mobiletaxcreditssummary.service
 
+import com.typesafe.config.Config
+import javax.inject.Inject
 import play.api.Configuration
 import uk.gov.hmrc.api.sandbox.FileResource
 import uk.gov.hmrc.domain.Nino
@@ -30,7 +32,7 @@ import uk.gov.hmrc.play.test.WithFakeApplication
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class TaxCreditsSummaryServiceSpec extends TestSetup with WithFakeApplication with FileResource {
+class TaxCreditsSummaryServiceSpec @Inject()(val config: Config) extends TestSetup with WithFakeApplication with FileResource {
   implicit val taxCreditsBrokerConnector: TaxCreditsBrokerConnector = mock[TaxCreditsBrokerConnector]
   implicit val auditConnector: AuditConnector = mock[AuditConnector]
   val configuration: Configuration = fakeApplication.injector.instanceOf[Configuration]

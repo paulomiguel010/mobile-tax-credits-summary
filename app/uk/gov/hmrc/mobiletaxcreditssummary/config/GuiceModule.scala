@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 HM Revenue & Customs
+ * Copyright 2019 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package uk.gov.hmrc.mobiletaxcreditssummary.config
 import com.google.inject.name.Named
 import com.google.inject.name.Names.named
 import com.google.inject.{AbstractModule, Provides}
+import com.typesafe.config.Config
 import play.api.Mode.Mode
 import play.api.{Configuration, Environment}
 import uk.gov.hmrc.api.connector.{ApiServiceLocatorConnector, ServiceLocatorConnector}
@@ -55,6 +56,9 @@ class GuiceModule(environment: Environment, configuration: Configuration) extend
     bind(classOf[ApiAccess]).toInstance(
       ApiAccess("PRIVATE", configuration.underlying.getStringList("api.access.white-list.applicationIds").asScala))
   }
+
+  class DefaultConfig(val config: Config)
+
 
   @Provides
   @Named("appName")

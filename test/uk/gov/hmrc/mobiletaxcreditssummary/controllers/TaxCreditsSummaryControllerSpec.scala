@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 HM Revenue & Customs
+ * Copyright 2019 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@
 
 package uk.gov.hmrc.mobiletaxcreditssummary.controllers
 
+import com.typesafe.config.Config
+import javax.inject.Inject
 import org.joda.time.LocalDate
 import play.api.libs.json.Json
 import play.api.libs.json.Json.toJson
@@ -31,7 +33,7 @@ import uk.gov.hmrc.play.test.WithFakeApplication
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class TaxCreditsSummaryControllerSpec extends TestSetup with WithFakeApplication with FileResource {
+class TaxCreditsSummaryControllerSpec @Inject()(val config: Config) extends TestSetup with WithFakeApplication with FileResource {
   "tax credits summary live" should {
     val controller = new LiveTaxCreditsSummaryController(mockAuthConnector, 200, mockService, mockAuditConnector, mockConfiguration)
     "process the request successfully and filter children older than 20 and where deceased flags are active and user is not excluded" in {

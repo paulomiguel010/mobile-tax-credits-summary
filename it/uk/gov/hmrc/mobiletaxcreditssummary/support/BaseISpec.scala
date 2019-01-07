@@ -16,6 +16,8 @@
 
 package uk.gov.hmrc.mobiletaxcreditssummary.support
 
+import com.typesafe.config.Config
+import javax.inject.Inject
 import org.scalatest.{Matchers, OptionValues}
 import org.scalatestplus.play.WsScalaTestClient
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
@@ -27,7 +29,7 @@ import uk.gov.hmrc.play.test.UnitSpec
 
 import scala.language.postfixOps
 
-class BaseISpec extends UnitSpec with Matchers with OptionValues with WsScalaTestClient with GuiceOneServerPerSuite with WireMockSupport {
+class BaseISpec @Inject()(config: Config) extends UnitSpec with Matchers with OptionValues with WsScalaTestClient with GuiceOneServerPerSuite with WireMockSupport {
   override implicit lazy val app: Application = appBuilder.build()
 
   protected val nino1 = Nino("AA000000A")
@@ -35,7 +37,7 @@ class BaseISpec extends UnitSpec with Matchers with OptionValues with WsScalaTes
   protected val sandboxNino = Nino("CS700100A")
   protected val acceptJsonHeader: (String, String) = "Accept" -> "application/vnd.hmrc.1.0+json"
 
-  def config: Map[String, Any] = Map(
+  def configuration: Map[String, Any] = Map(
     "auditing.enabled" -> true,
     "microservice.services.service-locator.enabled" -> false,
     "microservice.services.auth.port" -> wireMockPort,
@@ -44,7 +46,7 @@ class BaseISpec extends UnitSpec with Matchers with OptionValues with WsScalaTes
     "microservice.services.tax-credits-broker.port" -> wireMockPort,
     "auditing.consumer.baseUri.port" -> wireMockPort)
 
-  protected def appBuilder: GuiceApplicationBuilder = new GuiceApplicationBuilder().configure(config)
+  protected def appBuilder: GuiceApplicationBuilder = new GuiceApplicationBuilder().configure(configuration)
 
   protected implicit lazy val wsClient: WSClient = app.injector.instanceOf[WSClient]
 

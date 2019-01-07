@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 HM Revenue & Customs
+ * Copyright 2019 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,14 @@
 
 package uk.gov.hmrc.mobiletaxcreditssummary.domain
 
+import com.typesafe.config.Config
+import javax.inject.Inject
 import org.joda.time.DateTime
 import play.api.libs.json.{JsSuccess, Json}
 import uk.gov.hmrc.mobiletaxcreditssummary.domain.userdata.{FuturePayment, PastPayment, PaymentSummary}
 import uk.gov.hmrc.play.test.{UnitSpec, WithFakeApplication}
 
-class PaymentSummarySpec extends UnitSpec with WithFakeApplication {
+class PaymentSummarySpec @Inject()(val config: Config) extends UnitSpec with WithFakeApplication {
 
   val now: DateTime = DateTime.now
 

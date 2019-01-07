@@ -31,20 +31,20 @@ def oneForkedJvmPerTest(tests: Seq[TestDefinition]): Seq[Group] =
   }
 
 val compile = Seq(
-  "uk.gov.hmrc" %% "bootstrap-play-25" % "3.10.0",
-  "uk.gov.hmrc" %% "auth-client" % "2.16.0-play-25",
-  "uk.gov.hmrc" %% "play-hmrc-api" % "3.2.0",
-  "uk.gov.hmrc" %% "domain" % "5.2.0",
-  "uk.gov.hmrc" %% "play-ui" % "7.22.0"
+  "uk.gov.hmrc" %% "bootstrap-play-25" % "4.6.0",
+  "uk.gov.hmrc" %% "auth-client" % "2.18.0-play-25",
+  "uk.gov.hmrc" %% "play-hmrc-api" % "3.4.0-play-25",
+  "uk.gov.hmrc" %% "domain" % "5.3.0",
+  "uk.gov.hmrc" %% "play-ui" % "7.27.0-play-25"
 )
 
 val test = Seq(
-  "uk.gov.hmrc" %% "hmrctest" % "3.2.0" % Test,
+  "uk.gov.hmrc" %% "hmrctest" % "3.3.0" % Test,
   "org.scalamock" %% "scalamock" % "4.0.0" % Test
 )
 
 val integration = Seq(
-  "uk.gov.hmrc" %% "hmrctest" % "3.2.0" % IntegrationTest,
+  "uk.gov.hmrc" %% "hmrctest" % "3.3.0" % IntegrationTest,
   "com.typesafe.play" %% "play-test" % PlayVersion.current % IntegrationTest,
   "info.cukes" %% "cucumber-scala" % "1.2.5" % IntegrationTest,
   "info.cukes" % "cucumber-junit" % "1.2.5" % IntegrationTest,
