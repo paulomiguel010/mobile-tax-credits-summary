@@ -16,12 +16,14 @@
 
 package uk.gov.hmrc.mobiletaxcreditssummary
 
+import com.typesafe.config.Config
+import javax.inject.Inject
 import play.api.libs.ws.{WSRequest, WSResponse}
 import uk.gov.hmrc.api.sandbox.FileResource
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.mobiletaxcreditssummary.support.BaseISpec
 
-class SandboxTaxCreditsSummaryISpec extends BaseISpec with FileResource {
+class SandboxTaxCreditsSummaryISpec @Inject()(config: Config) extends BaseISpec(config) with FileResource {
 
   private val mobileHeader = "X-MOBILE-USER-ID" -> "208606423740"
 

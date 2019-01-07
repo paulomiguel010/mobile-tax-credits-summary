@@ -16,6 +16,8 @@
 
 package uk.gov.hmrc.mobiletaxcreditssummary
 
+import com.typesafe.config.Config
+import javax.inject.Inject
 import play.api.libs.json.JsArray
 import play.api.libs.ws.WSRequest
 import uk.gov.hmrc.api.sandbox.FileResource
@@ -24,7 +26,7 @@ import uk.gov.hmrc.mobiletaxcreditssummary.stubs.AuthStub.grantAccess
 import uk.gov.hmrc.mobiletaxcreditssummary.stubs.TaxCreditsBrokerStub._
 import uk.gov.hmrc.mobiletaxcreditssummary.support.BaseISpec
 
-class TaxCreditsSummaryISpec extends BaseISpec with FileResource {
+class TaxCreditsSummaryISpec @Inject()(config: Config) extends BaseISpec(config) with FileResource {
 
   "GET /income/:nino/tax-credits/tax-credits-summary " should {
     def request(nino: Nino): WSRequest = wsUrl(s"/income/${nino.value}/tax-credits/tax-credits-summary").withHeaders(acceptJsonHeader)

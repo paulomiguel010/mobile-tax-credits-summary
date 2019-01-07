@@ -1,5 +1,7 @@
 package uk.gov.hmrc.mobiletaxcreditssummary.api
 
+import com.typesafe.config.Config
+import javax.inject.Inject
 import org.scalatest.concurrent.Eventually
 import org.scalatest.concurrent.PatienceConfiguration.Timeout
 import org.scalatest.time.{Millis, Span}
@@ -23,13 +25,13 @@ import uk.gov.hmrc.mobiletaxcreditssummary.support.BaseISpec
   *
   * See: confluence ApiPlatform/API+Platform+Architecture+with+Flows
   */
-class PlatformIntegrationSpec extends BaseISpec with Eventually with PlayRunners {
+class PlatformIntegrationSpec @Inject()(config: Config) extends BaseISpec(config) with Eventually with PlayRunners {
 
   private val appId1: String = "00010002-0003-0004-0005-000600070008"
   private val appId2: String = "00090002-0003-0004-0005-000600070008"
 
   override protected def appBuilder: GuiceApplicationBuilder = new GuiceApplicationBuilder().configure(
-    config ++
+    configuration ++
       Map(
         "microservice.services.service-locator.host" -> wireMockHost,
         "microservice.services.service-locator.port" -> wireMockPort,

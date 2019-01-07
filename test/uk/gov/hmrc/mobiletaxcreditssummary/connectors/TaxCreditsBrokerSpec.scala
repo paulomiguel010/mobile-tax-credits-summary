@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 HM Revenue & Customs
+ * Copyright 2019 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,9 @@
 
 package uk.gov.hmrc.mobiletaxcreditssummary.connectors
 
+import akka.actor.ActorSystem
 import com.typesafe.config.Config
+import javax.inject.Inject
 import org.joda.time.DateTime
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.concurrent.ScalaFutures
@@ -31,7 +33,7 @@ import uk.gov.hmrc.play.test.{UnitSpec, WithFakeApplication}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class TaxCreditsBrokerSpec extends UnitSpec with ScalaFutures with WithFakeApplication {
+class TaxCreditsBrokerSpec @Inject() (actorSystem: ActorSystem) extends UnitSpec with ScalaFutures with WithFakeApplication {
 
   trait Setup extends MockFactory {
     implicit lazy val hc: HeaderCarrier = HeaderCarrier()
@@ -89,6 +91,8 @@ class TaxCreditsBrokerSpec extends UnitSpec with ScalaFutures with WithFakeAppli
         override def configuration: Option[Config] = None
 
         override def doGet(url: String)(implicit hc: HeaderCarrier): Future[HttpResponse] = response.getOrElse(throw new Exception("No response defined!"))
+
+        override protected def actorSystem: ActorSystem = actorSystem
       }
 
       new TestTaxCreditsBrokerConnector(http)
