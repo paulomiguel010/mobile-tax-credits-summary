@@ -20,6 +20,7 @@ import akka.actor.ActorSystem
 import com.google.inject.Inject
 import com.typesafe.config.Config
 import javax.inject.Named
+import play.api.Play
 import uk.gov.hmrc.http.hooks.HttpHooks
 import uk.gov.hmrc.play.audit.http.HttpAuditing
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
@@ -31,14 +32,13 @@ trait Hooks extends HttpHooks with HttpAuditing {
   val hooks = Seq(AuditingHook)
 }
 
-class WSHttpImpl @Inject()(@Named("appName") val appName: String, val auditConnector: AuditConnector, val actorSystem: ActorSystem, config: Config) extends HttpClient with WSGet
+class WSHttpImpl @Inject()(@Named("appName") val appName: String, val auditConnector: AuditConnector, val actorSystem: ActorSystem) extends HttpClient with WSGet
   with WSPut
   with WSPost
   with WSDelete
   with WSPatch
   with Hooks {
-
-  override protected def configuration: Option[Config] = Some(config)
+  override protected def configuration: Option[Config] = Some(Play.current.configuration.underlying)
 }
 
 class MicroserviceAudit @Inject()(@Named("appName") val applicationName: String,
