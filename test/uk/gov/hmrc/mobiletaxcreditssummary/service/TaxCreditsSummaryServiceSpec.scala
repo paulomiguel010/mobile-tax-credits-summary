@@ -16,9 +16,8 @@
 
 package uk.gov.hmrc.mobiletaxcreditssummary.service
 
-import com.typesafe.config.Config
-import javax.inject.Inject
 import play.api.Configuration
+import play.api.test.{DefaultAwaitTimeout, FutureAwaits}
 import uk.gov.hmrc.api.sandbox.FileResource
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{Upstream4xxResponse, Upstream5xxResponse}
@@ -28,46 +27,33 @@ import uk.gov.hmrc.mobiletaxcreditssummary.domain.TaxCreditsNino
 import uk.gov.hmrc.mobiletaxcreditssummary.domain.userdata._
 import uk.gov.hmrc.mobiletaxcreditssummary.services.LiveTaxCreditsSummaryService
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
-import uk.gov.hmrc.play.test.WithFakeApplication
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class TaxCreditsSummaryServiceSpec @Inject()(val config: Config) extends TestSetup with WithFakeApplication with FileResource {
+class TaxCreditsSummaryServiceSpec extends TestSetup with FileResource with FutureAwaits with DefaultAwaitTimeout {
   implicit val taxCreditsBrokerConnector: TaxCreditsBrokerConnector = mock[TaxCreditsBrokerConnector]
-  implicit val auditConnector: AuditConnector = mock[AuditConnector]
-  val configuration: Configuration = fakeApplication.injector.instanceOf[Configuration]
+  implicit val auditConnector:            AuditConnector            = mock[AuditConnector]
+  val configuration:                      Configuration             = mock[Configuration]
 
   val service = new LiveTaxCreditsSummaryService(taxCreditsBrokerConnector)
 
   val exclusionPaymentSummary = PaymentSummary(None, None, None, None, excluded = Some(true))
-  val taxCreditsNino = TaxCreditsNino(nino)
+  val taxCreditsNino          = TaxCreditsNino(nino)
 
   val upstream4xxException = Upstream4xxResponse("blows up for excluded users", 405, 405)
   val upstream5xxException = Upstream5xxResponse("blows up for excluded users", 500, 500)
 
   val taxCreditsSummary =
-    TaxCreditsSummaryResponse(
-      taxCreditsSummary = Some(TaxCreditsSummary(
-        paymentSummary,
-        Some(claimants))))
+    TaxCreditsSummaryResponse(taxCreditsSummary = Some(TaxCreditsSummary(paymentSummary, Some(claimants))))
 
   val taxCreditsSummaryNoPartnerDetails =
-    TaxCreditsSummaryResponse(
-      taxCreditsSummary = Some(TaxCreditsSummary(
-        paymentSummary,
-        Some(claimantsNoPartnerDetails))))
+    TaxCreditsSummaryResponse(taxCreditsSummary = Some(TaxCreditsSummary(paymentSummary, Some(claimantsNoPartnerDetails))))
 
   val taxCreditsSummaryNoChildren =
-    TaxCreditsSummaryResponse(
-      taxCreditsSummary = Some(TaxCreditsSummary(
-        paymentSummary,
-        Some(claimantsNoChildren))))
+    TaxCreditsSummaryResponse(taxCreditsSummary = Some(TaxCreditsSummary(paymentSummary, Some(claimantsNoChildren))))
 
   val taxCreditsSummaryNoClaimants =
-    TaxCreditsSummaryResponse(
-      taxCreditsSummary = Some(TaxCreditsSummary(
-        paymentSummary,
-        None)))
+    TaxCreditsSummaryResponse(taxCreditsSummary = Some(TaxCreditsSummary(paymentSummary, None)))
 
   "getTaxCreditsSummaryResponse" should {
     "return a non-tax-credits user payload when exclusion returns None" in {

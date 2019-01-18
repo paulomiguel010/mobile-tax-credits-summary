@@ -1,7 +1,5 @@
 package uk.gov.hmrc.mobiletaxcreditssummary.api
 
-import com.typesafe.config.Config
-import javax.inject.Inject
 import org.scalatest.concurrent.Eventually
 import org.scalatest.concurrent.PatienceConfiguration.Timeout
 import org.scalatest.time.{Millis, Span}
@@ -25,7 +23,7 @@ import uk.gov.hmrc.mobiletaxcreditssummary.support.BaseISpec
   *
   * See: confluence ApiPlatform/API+Platform+Architecture+with+Flows
   */
-class PlatformIntegrationSpec @Inject()(config: Config) extends BaseISpec(config) with Eventually with PlayRunners {
+class PlatformIntegrationSpec extends BaseISpec with Eventually with PlayRunners {
 
   private val appId1: String = "00010002-0003-0004-0005-000600070008"
   private val appId2: String = "00090002-0003-0004-0005-000600070008"
@@ -35,7 +33,7 @@ class PlatformIntegrationSpec @Inject()(config: Config) extends BaseISpec(config
       Map(
         "microservice.services.service-locator.host" -> wireMockHost,
         "microservice.services.service-locator.port" -> wireMockPort,
-        "api.access.white-list.applicationIds" -> Seq(appId1, appId2)
+        "api.access.white-list.applicationIds"       -> Seq(appId1, appId2)
       )
   )
 
@@ -52,17 +50,17 @@ class PlatformIntegrationSpec @Inject()(config: Config) extends BaseISpec(config
       val result: WSResponse = await(wsUrl("/api/definition").get())
       result.status shouldBe 200
 
-      val definition: JsValue = result.json
-      val versions: Seq[JsValue] = (definition \ "api" \\ "versions").head.as[JsArray].value
+      val definition: JsValue      = result.json
+      val versions:   Seq[JsValue] = (definition \ "api" \\ "versions").head.as[JsArray].value
       versions.length shouldBe 1
 
       val versionJson: JsValue = versions.head
       (versionJson \ "version").as[String] shouldBe "1.0"
 
       val accessDetails: JsValue = (versionJson \\ "access").head
-      (accessDetails \ "type").as[String] shouldBe "PRIVATE"
+      (accessDetails \ "type").as[String]                           shouldBe "PRIVATE"
       (accessDetails \ "whitelistedApplicationIds").head.as[String] shouldBe appId1
-      (accessDetails \ "whitelistedApplicationIds") (1).as[String] shouldBe appId2
+      (accessDetails \ "whitelistedApplicationIds")(1).as[String]   shouldBe appId2
     }
 
     "provide RAML conf endpoint" in {
@@ -71,4 +69,3 @@ class PlatformIntegrationSpec @Inject()(config: Config) extends BaseISpec(config
     }
   }
 }
-

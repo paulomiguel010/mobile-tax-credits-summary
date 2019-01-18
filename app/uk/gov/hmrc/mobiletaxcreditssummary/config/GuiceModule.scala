@@ -16,28 +16,24 @@
 
 package uk.gov.hmrc.mobiletaxcreditssummary.config
 
-import com.google.inject.name.Named
+import com.google.inject.AbstractModule
 import com.google.inject.name.Names.named
-import com.google.inject.{AbstractModule, Provides}
 import com.typesafe.config.Config
-import play.api.Mode.Mode
 import play.api.{Configuration, Environment}
 import uk.gov.hmrc.api.connector.{ApiServiceLocatorConnector, ServiceLocatorConnector}
-import uk.gov.hmrc.api.controllers.DocumentationController
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http.{CoreGet, CorePost}
 import uk.gov.hmrc.mobiletaxcreditssummary.controllers.api.ApiAccess
 import uk.gov.hmrc.mobiletaxcreditssummary.tasks.ServiceLocatorRegistrationTask
 import uk.gov.hmrc.play.bootstrap.auth.DefaultAuthConnector
+import uk.gov.hmrc.play.bootstrap.config.{RunMode, ServicesConfig}
 import uk.gov.hmrc.play.bootstrap.http.HttpClient
-import uk.gov.hmrc.play.config.{AppName, ServicesConfig}
 
 import scala.collection.JavaConverters._
 
-class GuiceModule(environment: Environment, configuration: Configuration) extends AbstractModule with ServicesConfig {
+class GuiceModule(environment: Environment, configuration: Configuration) extends AbstractModule {
 
-  override protected lazy val mode: Mode = environment.mode
-  override protected lazy val runModeConfiguration: Configuration = configuration
+  val servicesConfig = new ServicesConfig(configuration, new RunMode(configuration, environment.mode))
 
   override def configure(): Unit = {
     bind(classOf[ServiceLocatorConnector]).to(classOf[ApiServiceLocatorConnector])
@@ -45,36 +41,29 @@ class GuiceModule(environment: Environment, configuration: Configuration) extend
     bind(classOf[CoreGet]).to(classOf[WSHttpImpl])
     bind(classOf[CorePost]).to(classOf[WSHttpImpl])
     bind(classOf[HttpClient]).to(classOf[WSHttpImpl])
-    bind(classOf[DocumentationController]).toInstance(DocumentationController)
     bind(classOf[ServiceLocatorRegistrationTask]).asEagerSingleton()
 
     bindConfigInt("controllers.confidenceLevel")
     bindConfigString("appUrl", "appUrl")
 
-    bind(classOf[String]).annotatedWith(named("tax-credits-broker")).toInstance(baseUrl("tax-credits-broker"))
+    bind(classOf[String]).annotatedWith(named("tax-credits-broker")).toInstance(servicesConfig.baseUrl("tax-credits-broker"))
 
-    bind(classOf[ApiAccess]).toInstance(
-      ApiAccess("PRIVATE", configuration.underlying.getStringList("api.access.white-list.applicationIds").asScala))
+    bind(classOf[ApiAccess]).toInstance(ApiAccess("PRIVATE", configuration.underlying.getStringList("api.access.white-list.applicationIds").asScala))
   }
 
   class DefaultConfig(val config: Config)
-
-
-  @Provides
-  @Named("appName")
-  def appName: String = AppName(configuration).appName
 
   /**
     * Binds a configuration value using the `path` as the name for the binding.
     * Throws an exception if the configuration value does not exist or cannot be read as an Int.
     */
-  private def bindConfigInt(path: String): Unit = {
-    bindConstant().annotatedWith(named(path))
+  private def bindConfigInt(path: String): Unit =
+    bindConstant()
+      .annotatedWith(named(path))
       .to(configuration.underlying.getInt(path))
-  }
 
-  private def bindConfigString(name: String, path: String): Unit = {
-    bindConstant().annotatedWith(named(name))
+  private def bindConfigString(name: String, path: String): Unit =
+    bindConstant()
+      .annotatedWith(named(name))
       .to(configuration.underlying.getString(path))
-  }
 }

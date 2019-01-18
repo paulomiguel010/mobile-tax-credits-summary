@@ -16,26 +16,31 @@
 
 package uk.gov.hmrc.mobiletaxcreditssummary.domain
 
-import com.typesafe.config.Config
-import javax.inject.Inject
+import java.time.LocalDateTime
+
 import org.joda.time.DateTime
-import play.api.libs.json.{JsSuccess, Json}
+import org.scalatest.{Matchers, OptionValues, WordSpecLike}
+import play.api.libs.json.Json
 import uk.gov.hmrc.mobiletaxcreditssummary.domain.userdata.{FuturePayment, PastPayment, PaymentSummary}
-import uk.gov.hmrc.play.test.{UnitSpec, WithFakeApplication}
 
-class PaymentSummarySpec @Inject()(val config: Config) extends UnitSpec with WithFakeApplication {
+class PaymentSummarySpec extends WordSpecLike with Matchers with OptionValues {
 
-  val now: DateTime = DateTime.now
+  private val now = LocalDateTime.now
 
-  def date(n: Int, func: Int => DateTime): Long = func(n).getMillis
+  def date(n: Int, func: Long => LocalDateTime): Long = func(n).getNano / 1000
 
-  def payment(amount: Double, paymentDate: Long, oneOffPayment: Boolean, holidayType: Option[String] = None, explanatoryText: Option[String] = None): String = {
-    val bankHolidayJson = if (holidayType.isDefined) s"""| "holidayType": "${holidayType.get}", """ else ""
+  def payment(
+    amount:          Double,
+    paymentDate:     LocalDateTime,
+    oneOffPayment:   Boolean,
+    holidayType:     Option[String] = None,
+    explanatoryText: Option[String] = None): String = {
+    val bankHolidayJson     = if (holidayType.isDefined) s"""| "holidayType": "${holidayType.get}", """ else ""
     val explanatoryTextJson = if (explanatoryText.isDefined) s"""|, "explanatoryText": "${explanatoryText.get}" """ else ""
 
     s"""{
        | "amount": $amount,
-       | "paymentDate": $paymentDate,
+       | "paymentDate": ${Json.toJson(paymentDate)},
        | "oneOffPayment": $oneOffPayment,
        $bankHolidayJson
        | "earlyPayment": ${holidayType.isDefined}
@@ -43,17 +48,16 @@ class PaymentSummarySpec @Inject()(val config: Config) extends UnitSpec with Wit
        |}""".stripMargin
   }
 
-  def total(amount: Double, paymentDate: Long): String = {
+  def total(amount: Double, paymentDate: LocalDateTime): String =
     s"""{
        |"amount": $amount,
-       |"paymentDate": $paymentDate
+       |"paymentDate": ${Json.toJson(paymentDate)}
        |}""".stripMargin
-  }
 
-  private val futureEarlyPaymentText = Some("Your payment is early because of UK bank holidays.")
-  private val pastEarlyPaymentText = Some("Your payment was early because of UK bank holidays.")
+  private val futureEarlyPaymentText  = Some("Your payment is early because of UK bank holidays.")
+  private val pastEarlyPaymentText    = Some("Your payment was early because of UK bank holidays.")
   private val futureOneOffPaymentText = Some("This is because of a recent change and is to help you get the right amount of tax credits.")
-  private val pastOneOffPaymentText = Some("This was because of a recent change and was to help you get the right amount of tax credits.")
+  private val pastOneOffPaymentText   = Some("This was because of a recent change and was to help you get the right amount of tax credits.")
 
   private val bankHoliday = Some("bankHolidsy")
 
@@ -62,14 +66,11 @@ class PaymentSummarySpec @Inject()(val config: Config) extends UnitSpec with Wit
       val request =
         """{"paymentEnabled":true}""".stripMargin
 
-      val response = Json.parse(request).validate[PaymentSummary]
-      val paymentSummary = response match {
-        case success: JsSuccess[PaymentSummary] =>
-          success.get
-      }
-      paymentSummary.paymentEnabled.get shouldBe true
-      paymentSummary.childTaxCredit shouldBe None
-      paymentSummary.workingTaxCredit shouldBe None
+      val response       = Json.parse(request).validate[PaymentSummary]
+      val paymentSummary = response.asOpt.value
+      paymentSummary.paymentEnabled.get     shouldBe true
+      paymentSummary.childTaxCredit         shouldBe None
+      paymentSummary.workingTaxCredit       shouldBe None
       paymentSummary.totalsByDate.isDefined shouldBe false
 
       Json.stringify(Json.toJson(paymentSummary)) shouldBe request
@@ -79,9 +80,9 @@ class PaymentSummarySpec @Inject()(val config: Config) extends UnitSpec with Wit
         s"""
            |"childTaxCredit": {
            |  "paymentSeq": [
-           |    ${payment(55.00, date(1, now.plusMonths), oneOffPayment = false)},
-           |    ${payment(55.00, date(2, now.plusMonths), oneOffPayment = true, None, futureOneOffPaymentText)},
-           |    ${payment(55.00, date(3, now.plusMonths), oneOffPayment = false, bankHoliday, futureEarlyPaymentText)}
+           |    ${payment(55.00, now.plusMonths(1), oneOffPayment = false)},
+           |    ${payment(55.00, now.plusMonths(2), oneOffPayment = true, None, futureOneOffPaymentText)},
+           |    ${payment(55.00, now.plusMonths(3), oneOffPayment = false, bankHoliday, futureEarlyPaymentText)}
            |  ],
            |  "paymentFrequency": "weekly"
            |}
@@ -90,23 +91,21 @@ class PaymentSummarySpec @Inject()(val config: Config) extends UnitSpec with Wit
       val totalsByDate =
         s"""
            |"totalsByDate": [
-           |  ${total(55.00, date(1, now.plusMonths))},
-           |  ${total(55.00, date(2, now.plusMonths))},
-           |  ${total(55.00, date(3, now.plusMonths))}
+           |  ${total(55.00, now.plusMonths(1))},
+           |  ${total(55.00, now.plusMonths(2))},
+           |  ${total(55.00, now.plusMonths(3))}
            |]
          """.stripMargin
 
-      val request = s"""{$ctc, "paymentEnabled": true}""".stripMargin
+      val request          = s"""{$ctc, "paymentEnabled": true}""".stripMargin
       val expectedResponse = Json.stringify(Json.parse(s"""{ $ctc, "paymentEnabled": true, $totalsByDate }"""))
-      val response = Json.parse(request).validate[PaymentSummary]
-      val paymentSummary = response match {
-        case success: JsSuccess[PaymentSummary] =>
-          success.get
-      }
-      paymentSummary.paymentEnabled.get shouldBe true
-      paymentSummary.childTaxCredit.isDefined shouldBe true
+      val response         = Json.parse(request).validate[PaymentSummary]
+      val paymentSummary   = response.asOpt.value
+
+      paymentSummary.paymentEnabled.get         shouldBe true
+      paymentSummary.childTaxCredit.isDefined   shouldBe true
       paymentSummary.workingTaxCredit.isDefined shouldBe false
-      paymentSummary.totalsByDate.isDefined shouldBe true
+      paymentSummary.totalsByDate.isDefined     shouldBe true
 
       Json.stringify(Json.toJson(paymentSummary)) shouldBe expectedResponse
     }
@@ -116,9 +115,9 @@ class PaymentSummarySpec @Inject()(val config: Config) extends UnitSpec with Wit
         s"""
            |"workingTaxCredit": {
            |  "paymentSeq": [
-           |    ${payment(55.00, date(1, now.plusMonths), oneOffPayment = false)},
-           |    ${payment(55.00, date(2, now.plusMonths), oneOffPayment = true, None, futureOneOffPaymentText)},
-           |    ${payment(55.00, date(3, now.plusMonths), oneOffPayment = false, bankHoliday, futureEarlyPaymentText)}
+           |    ${payment(55.00, now.plusMonths(1), oneOffPayment = false)},
+           |    ${payment(55.00, now.plusMonths(2), oneOffPayment = true, None, futureOneOffPaymentText)},
+           |    ${payment(55.00, now.plusMonths(3), oneOffPayment = false, bankHoliday, futureEarlyPaymentText)}
            |  ],
            |  "paymentFrequency": "weekly"
            |}
@@ -127,23 +126,20 @@ class PaymentSummarySpec @Inject()(val config: Config) extends UnitSpec with Wit
       val totalsByDate =
         s"""
            |"totalsByDate": [
-           |  ${total(55.00, date(1, now.plusMonths))},
-           |  ${total(55.00, date(2, now.plusMonths))},
-           |  ${total(55.00, date(3, now.plusMonths))}
+           |  ${total(55.00, now.plusMonths(1))},
+           |  ${total(55.00, now.plusMonths(2))},
+           |  ${total(55.00, now.plusMonths(3))}
            |]
          """.stripMargin
 
-      val request = s"""{$wtc,"paymentEnabled": true}""".stripMargin
+      val request          = s"""{$wtc,"paymentEnabled": true}""".stripMargin
       val expectedResponse = Json.stringify(Json.parse(s"""{ $wtc, "paymentEnabled": true, $totalsByDate }"""))
-      val response = Json.parse(request).validate[PaymentSummary]
-      val paymentSummary = response match {
-        case success: JsSuccess[PaymentSummary] =>
-          success.get
-      }
-      paymentSummary.paymentEnabled.get shouldBe true
-      paymentSummary.childTaxCredit.isDefined shouldBe false
+      val response         = Json.parse(request).validate[PaymentSummary]
+      val paymentSummary   = response.asOpt.value
+      paymentSummary.paymentEnabled.get         shouldBe true
+      paymentSummary.childTaxCredit.isDefined   shouldBe false
       paymentSummary.workingTaxCredit.isDefined shouldBe true
-      paymentSummary.totalsByDate.isEmpty shouldBe false
+      paymentSummary.totalsByDate.isEmpty       shouldBe false
 
       Json.stringify(Json.toJson(paymentSummary)) shouldBe expectedResponse
     }
@@ -153,9 +149,9 @@ class PaymentSummarySpec @Inject()(val config: Config) extends UnitSpec with Wit
         s"""
            |"workingTaxCredit": {
            |  "paymentSeq": [
-           |    ${payment(55.00, date(1, now.plusMonths), oneOffPayment = false)},
-           |    ${payment(55.00, date(2, now.plusMonths), oneOffPayment = true, None, futureOneOffPaymentText)},
-           |    ${payment(55.00, date(3, now.plusMonths), oneOffPayment = false, bankHoliday, futureEarlyPaymentText)}
+           |    ${payment(55.00, now.plusMonths(1), oneOffPayment = false)},
+           |    ${payment(55.00, now.plusMonths(2), oneOffPayment = true, None, futureOneOffPaymentText)},
+           |    ${payment(55.00, now.plusMonths(3), oneOffPayment = false, bankHoliday, futureEarlyPaymentText)}
            |  ],
            |  "paymentFrequency": "weekly"
            |}
@@ -165,9 +161,9 @@ class PaymentSummarySpec @Inject()(val config: Config) extends UnitSpec with Wit
         s"""
            |"childTaxCredit": {
            |  "paymentSeq": [
-           |    ${payment(55.00, date(1, now.plusMonths), oneOffPayment = false)},
-           |    ${payment(55.00, date(2, now.plusMonths), oneOffPayment = true, None, futureOneOffPaymentText)},
-           |    ${payment(55.00, date(3, now.plusMonths), oneOffPayment = false, bankHoliday, futureEarlyPaymentText)}
+           |    ${payment(55.00, now.plusMonths(1), oneOffPayment = false)},
+           |    ${payment(55.00, now.plusMonths(2), oneOffPayment = true, None, futureOneOffPaymentText)},
+           |    ${payment(55.00, now.plusMonths(3), oneOffPayment = false, bankHoliday, futureEarlyPaymentText)}
            |  ],
            |  "paymentFrequency": "weekly"
            |}
@@ -176,24 +172,21 @@ class PaymentSummarySpec @Inject()(val config: Config) extends UnitSpec with Wit
       val totalsByDate =
         s"""
            |"totalsByDate": [
-           |  ${total(110.00, date(1, now.plusMonths))},
-           |  ${total(110.00, date(2, now.plusMonths))},
-           |  ${total(110.00, date(3, now.plusMonths))}
+           |  ${total(110.00, now.plusMonths(1))},
+           |  ${total(110.00, now.plusMonths(2))},
+           |  ${total(110.00, now.plusMonths(3))}
            |]
          """.stripMargin
 
-      val request = s"""{ $wtc, $ctc, "paymentEnabled": true}""".stripMargin
+      val request          = s"""{ $wtc, $ctc, "paymentEnabled": true}""".stripMargin
       val expectedResponse = Json.stringify(Json.parse(s"""{ $wtc, $ctc, "paymentEnabled": true, $totalsByDate }"""))
 
-      val response = Json.parse(request).validate[PaymentSummary]
-      val paymentSummary = response match {
-        case success: JsSuccess[PaymentSummary] =>
-          success.get
-      }
-      paymentSummary.paymentEnabled.get shouldBe true
-      paymentSummary.childTaxCredit.isDefined shouldBe true
+      val response       = Json.parse(request).validate[PaymentSummary]
+      val paymentSummary = response.asOpt.value
+      paymentSummary.paymentEnabled.get         shouldBe true
+      paymentSummary.childTaxCredit.isDefined   shouldBe true
       paymentSummary.workingTaxCredit.isDefined shouldBe true
-      paymentSummary.totalsByDate.isDefined shouldBe true
+      paymentSummary.totalsByDate.isDefined     shouldBe true
 
       Json.stringify(Json.toJson(paymentSummary)) shouldBe expectedResponse
     }
@@ -203,15 +196,15 @@ class PaymentSummarySpec @Inject()(val config: Config) extends UnitSpec with Wit
         s"""
            |"workingTaxCredit": {
            |  "paymentSeq": [
-           |    ${payment(55.00, date(1, now.plusMonths), oneOffPayment = false)},
-           |    ${payment(55.00, date(2, now.plusMonths), oneOffPayment = true, None, futureOneOffPaymentText)},
-           |    ${payment(55.00, date(3, now.plusMonths), oneOffPayment = false, bankHoliday, futureEarlyPaymentText)}
+           |    ${payment(55.00, now.plusMonths(1), oneOffPayment = false)},
+           |    ${payment(55.00, now.plusMonths(2), oneOffPayment = true, None, futureOneOffPaymentText)},
+           |    ${payment(55.00, now.plusMonths(3), oneOffPayment = false, bankHoliday, futureEarlyPaymentText)}
            |  ],
            |  "paymentFrequency": "weekly",
            |  "previousPaymentSeq": [
-           |    ${payment(33.00, date(1, now.minusMonths), oneOffPayment = false)},
-           |    ${payment(43.00, date(2, now.minusMonths), oneOffPayment = true, None, pastOneOffPaymentText)},
-           |    ${payment(53.00, date(3, now.minusMonths), oneOffPayment = false, bankHoliday, pastEarlyPaymentText)}
+           |    ${payment(33.00, now.minusMonths(1), oneOffPayment = false)},
+           |    ${payment(43.00, now.minusMonths(2), oneOffPayment = true, None, pastOneOffPaymentText)},
+           |    ${payment(53.00, now.minusMonths(3), oneOffPayment = false, bankHoliday, pastEarlyPaymentText)}
            |  ]
            |}
          """.stripMargin
@@ -220,9 +213,9 @@ class PaymentSummarySpec @Inject()(val config: Config) extends UnitSpec with Wit
         s"""
            |"childTaxCredit": {
            |  "paymentSeq": [
-           |    ${payment(55.00, date(1, now.plusMonths), oneOffPayment = false)},
-           |    ${payment(55.00, date(2, now.plusMonths), oneOffPayment = true, None, futureOneOffPaymentText)},
-           |    ${payment(55.00, date(3, now.plusMonths), oneOffPayment = false, bankHoliday, futureEarlyPaymentText)}
+           |    ${payment(55.00, now.plusMonths(1), oneOffPayment = false)},
+           |    ${payment(55.00, now.plusMonths(2), oneOffPayment = true, None, futureOneOffPaymentText)},
+           |    ${payment(55.00, now.plusMonths(3), oneOffPayment = false, bankHoliday, futureEarlyPaymentText)}
            |  ],
            |  "paymentFrequency": "weekly"
            |}
@@ -231,34 +224,31 @@ class PaymentSummarySpec @Inject()(val config: Config) extends UnitSpec with Wit
       val totalsByDate =
         s"""
            |"totalsByDate": [
-           |  ${total(110.00, date(1, now.plusMonths))},
-           |  ${total(110.00, date(2, now.plusMonths))},
-           |  ${total(110.00, date(3, now.plusMonths))}
+           |  ${total(110.00, now.plusMonths(1))},
+           |  ${total(110.00, now.plusMonths(2))},
+           |  ${total(110.00, now.plusMonths(3))}
            |]
          """.stripMargin
 
       val previousTotalsByDate =
         s"""
            |"previousTotalsByDate": [
-           | ${total(53.00, date(3, now.minusMonths))},
-           | ${total(43.00, date(2, now.minusMonths))},
-           | ${total(33.00, date(1, now.minusMonths))}
+           | ${total(53.00, now.minusMonths(3))},
+           | ${total(43.00, now.minusMonths(2))},
+           | ${total(33.00, now.minusMonths(1))}
            |]
          """.stripMargin
 
-      val request = s"""{ $wtc, $ctc, "paymentEnabled": true}""".stripMargin
+      val request          = s"""{ $wtc, $ctc, "paymentEnabled": true}""".stripMargin
       val expectedResponse = Json.stringify(Json.parse(s"""{ $wtc, $ctc, "paymentEnabled": true, $totalsByDate, $previousTotalsByDate }"""))
-      val response = Json.parse(request).validate[PaymentSummary]
-      val paymentSummary = response match {
-        case success: JsSuccess[PaymentSummary] =>
-          success.get
-      }
-      paymentSummary.paymentEnabled.get shouldBe true
-      paymentSummary.childTaxCredit.isDefined shouldBe true
-      paymentSummary.workingTaxCredit.isDefined shouldBe true
-      paymentSummary.totalsByDate.isDefined shouldBe true
+      val response         = Json.parse(request).validate[PaymentSummary]
+      val paymentSummary   = response.asOpt.value
+      paymentSummary.paymentEnabled.get             shouldBe true
+      paymentSummary.childTaxCredit.isDefined       shouldBe true
+      paymentSummary.workingTaxCredit.isDefined     shouldBe true
+      paymentSummary.totalsByDate.isDefined         shouldBe true
       paymentSummary.previousTotalsByDate.isDefined shouldBe true
-      Json.stringify(Json.toJson(paymentSummary)) shouldBe expectedResponse
+      Json.stringify(Json.toJson(paymentSummary))   shouldBe expectedResponse
     }
     "correctly parse the previous payments and associated totals for ctc" in {
 
@@ -266,9 +256,9 @@ class PaymentSummarySpec @Inject()(val config: Config) extends UnitSpec with Wit
         s"""
            |"workingTaxCredit": {
            |  "paymentSeq": [
-           |    ${payment(55.00, date(1, now.plusMonths), oneOffPayment = false)},
-           |    ${payment(55.00, date(2, now.plusMonths), oneOffPayment = true, None, futureOneOffPaymentText)},
-           |    ${payment(55.00, date(3, now.plusMonths), oneOffPayment = false, bankHoliday, futureEarlyPaymentText)}
+           |    ${payment(55.00, now.plusMonths(1), oneOffPayment = false)},
+           |    ${payment(55.00, now.plusMonths(2), oneOffPayment = true, None, futureOneOffPaymentText)},
+           |    ${payment(55.00, now.plusMonths(3), oneOffPayment = false, bankHoliday, futureEarlyPaymentText)}
            |  ],
            |  "paymentFrequency": "weekly"
            |}
@@ -278,15 +268,15 @@ class PaymentSummarySpec @Inject()(val config: Config) extends UnitSpec with Wit
         s"""
            |"childTaxCredit": {
            |  "paymentSeq": [
-           |    ${payment(55.00, date(1, now.plusMonths), oneOffPayment = false)},
-           |    ${payment(55.00, date(2, now.plusMonths), oneOffPayment = true, None, futureOneOffPaymentText)},
-           |    ${payment(55.00, date(3, now.plusMonths), oneOffPayment = false, bankHoliday, futureEarlyPaymentText)}
+           |    ${payment(55.00, now.plusMonths(1), oneOffPayment = false)},
+           |    ${payment(55.00, now.plusMonths(2), oneOffPayment = true, None, futureOneOffPaymentText)},
+           |    ${payment(55.00, now.plusMonths(3), oneOffPayment = false, bankHoliday, futureEarlyPaymentText)}
            |  ],
            |  "paymentFrequency": "weekly",
            |  "previousPaymentSeq": [
-           |    ${payment(33.00, date(1, now.minusMonths), oneOffPayment = false)},
-           |    ${payment(43.00, date(2, now.minusMonths), oneOffPayment = true, None, pastOneOffPaymentText)},
-           |    ${payment(53.00, date(3, now.minusMonths), oneOffPayment = false, bankHoliday, pastEarlyPaymentText)}
+           |    ${payment(33.00, now.minusMonths(1), oneOffPayment = false)},
+           |    ${payment(43.00, now.minusMonths(2), oneOffPayment = true, None, pastOneOffPaymentText)},
+           |    ${payment(53.00, now.minusMonths(3), oneOffPayment = false, bankHoliday, pastEarlyPaymentText)}
            |  ]
            |}
          """.stripMargin
@@ -294,53 +284,50 @@ class PaymentSummarySpec @Inject()(val config: Config) extends UnitSpec with Wit
       val totalsByDate =
         s"""
            |"totalsByDate": [
-           |  ${total(110.00, date(1, now.plusMonths))},
-           |  ${total(110.00, date(2, now.plusMonths))},
-           |  ${total(110.00, date(3, now.plusMonths))}
+           |  ${total(110.00, now.plusMonths(1))},
+           |  ${total(110.00, now.plusMonths(2))},
+           |  ${total(110.00, now.plusMonths(3))}
            |]
          """.stripMargin
 
       val previousTotalsByDate =
         s"""
            |"previousTotalsByDate": [
-           | ${total(53.00, date(3, now.minusMonths))},
-           | ${total(43.00, date(2, now.minusMonths))},
-           | ${total(33.00, date(1, now.minusMonths))}
+           | ${total(53.00, now.minusMonths(3))},
+           | ${total(43.00, now.minusMonths(2))},
+           | ${total(33.00, now.minusMonths(1))}
            |]
          """.stripMargin
 
-      val request = s"""{ $wtc, $ctc, "paymentEnabled": true}""".stripMargin
+      val request          = s"""{ $wtc, $ctc, "paymentEnabled": true}""".stripMargin
       val expectedResponse = Json.stringify(Json.parse(s"""{ $wtc, $ctc, "paymentEnabled": true, $totalsByDate, $previousTotalsByDate }"""))
-      val response = Json.parse(request).validate[PaymentSummary]
-      val paymentSummary = response match {
-        case success: JsSuccess[PaymentSummary] =>
-          success.get
-      }
-      paymentSummary.paymentEnabled.get shouldBe true
-      paymentSummary.childTaxCredit.isDefined shouldBe true
-      paymentSummary.workingTaxCredit.isDefined shouldBe true
-      paymentSummary.totalsByDate.isDefined shouldBe true
+      val response         = Json.parse(request).validate[PaymentSummary]
+      val paymentSummary   = response.asOpt.value
+      paymentSummary.paymentEnabled.get             shouldBe true
+      paymentSummary.childTaxCredit.isDefined       shouldBe true
+      paymentSummary.workingTaxCredit.isDefined     shouldBe true
+      paymentSummary.totalsByDate.isDefined         shouldBe true
       paymentSummary.previousTotalsByDate.isDefined shouldBe true
-      Json.stringify(Json.toJson(paymentSummary)) shouldBe expectedResponse
+      Json.stringify(Json.toJson(paymentSummary))   shouldBe expectedResponse
     }
     "totals are calculated correctly for wtc and ctc with future and previous payments" in {
       val wtc =
         s"""
            |"workingTaxCredit": {
            |  "paymentSeq": [
-           |    ${payment(21.33, date(1, now.plusMonths), oneOffPayment = false)},
-           |    ${payment(33.33, date(2, now.plusMonths), oneOffPayment = false)},
-           |    ${payment(33.33, date(2, now.plusMonths), oneOffPayment = false)},
-           |    ${payment(22.95, date(2, now.plusMonths), oneOffPayment = true, None, futureOneOffPaymentText)},
-           |    ${payment(89.61, date(3, now.plusMonths), oneOffPayment = false, bankHoliday, futureEarlyPaymentText)}
+           |    ${payment(21.33, now.plusMonths(1), oneOffPayment = false)},
+           |    ${payment(33.33, now.plusMonths(2), oneOffPayment = false)},
+           |    ${payment(33.33, now.plusMonths(2), oneOffPayment = false)},
+           |    ${payment(22.95, now.plusMonths(2), oneOffPayment = true, None, futureOneOffPaymentText)},
+           |    ${payment(89.61, now.plusMonths(3), oneOffPayment = false, bankHoliday, futureEarlyPaymentText)}
            |  ],
            |  "paymentFrequency": "weekly",
            |  "previousPaymentSeq": [
-           |    ${payment(33.12, date(2, now.minusMonths), oneOffPayment = false)},
-           |    ${payment(33.56, date(2, now.minusMonths), oneOffPayment = false)},
-           |    ${payment(53.65, date(5, now.minusMonths), oneOffPayment = false)},
-           |    ${payment(50.35, date(5, now.minusMonths), oneOffPayment = true, None, pastOneOffPaymentText)},
-           |    ${payment(53.00, date(5, now.minusMonths), oneOffPayment = false, bankHoliday, pastEarlyPaymentText)}
+           |    ${payment(33.12, now.minusMonths(2), oneOffPayment = false)},
+           |    ${payment(33.56, now.minusMonths(2), oneOffPayment = false)},
+           |    ${payment(53.65, now.minusMonths(5), oneOffPayment = false)},
+           |    ${payment(50.35, now.minusMonths(5), oneOffPayment = true, None, pastOneOffPaymentText)},
+           |    ${payment(53.00, now.minusMonths(5), oneOffPayment = false, bankHoliday, pastEarlyPaymentText)}
            |  ]
            |}
          """.stripMargin
@@ -349,24 +336,24 @@ class PaymentSummarySpec @Inject()(val config: Config) extends UnitSpec with Wit
         s"""
            |"childTaxCredit": {
            |  "paymentSeq": [
-           |    ${payment(105.88, date(1, now.plusMonths), oneOffPayment = false)},
-           |    ${payment(100.55, date(2, now.plusMonths), oneOffPayment = false)},
-           |    ${payment(5.33, date(2, now.plusMonths), oneOffPayment = false)},
-           |    ${payment(100.55, date(3, now.plusMonths), oneOffPayment = false)},
-           |    ${payment(2.66, date(3, now.plusMonths), oneOffPayment = true, None, futureOneOffPaymentText)},
-           |    ${payment(2.67, date(3, now.plusMonths), oneOffPayment = false, bankHoliday, futureEarlyPaymentText)}
+           |    ${payment(105.88, now.plusMonths(1), oneOffPayment = false)},
+           |    ${payment(100.55, now.plusMonths(2), oneOffPayment = false)},
+           |    ${payment(5.33, now.plusMonths(2), oneOffPayment = false)},
+           |    ${payment(100.55, now.plusMonths(3), oneOffPayment = false)},
+           |    ${payment(2.66, now.plusMonths(3), oneOffPayment = true, None, futureOneOffPaymentText)},
+           |    ${payment(2.67, now.plusMonths(3), oneOffPayment = false, bankHoliday, futureEarlyPaymentText)}
            |  ],
            |  "paymentFrequency": "weekly",
            |  "previousPaymentSeq": [
-           |    ${payment(333.33, date(1, now.minusMonths), oneOffPayment = false)},
-           |    ${payment(333.33, date(1, now.minusMonths), oneOffPayment = false)},
-           |    ${payment(333.33, date(1, now.minusMonths), oneOffPayment = false)},
-           |    ${payment(213.00, date(2, now.minusMonths), oneOffPayment = false)},
-           |    ${payment(213.00, date(2, now.minusMonths), oneOffPayment = false)},
-           |    ${payment(213.00, date(2, now.minusMonths), oneOffPayment = false)},
-           |    ${payment(360.99, date(2, now.minusMonths), oneOffPayment = false)},
-           |    ${payment(153.12, date(3, now.minusMonths), oneOffPayment = true, None, pastOneOffPaymentText)},
-           |    ${payment(846.87, date(3, now.minusMonths), oneOffPayment = false, bankHoliday, pastEarlyPaymentText)}
+           |    ${payment(333.33, now.minusMonths(1), oneOffPayment = false)},
+           |    ${payment(333.33, now.minusMonths(1), oneOffPayment = false)},
+           |    ${payment(333.33, now.minusMonths(1), oneOffPayment = false)},
+           |    ${payment(213.00, now.minusMonths(2), oneOffPayment = false)},
+           |    ${payment(213.00, now.minusMonths(2), oneOffPayment = false)},
+           |    ${payment(213.00, now.minusMonths(2), oneOffPayment = false)},
+           |    ${payment(360.99, now.minusMonths(2), oneOffPayment = false)},
+           |    ${payment(153.12, now.minusMonths(3), oneOffPayment = true, None, pastOneOffPaymentText)},
+           |    ${payment(846.87, now.minusMonths(3), oneOffPayment = false, bankHoliday, pastEarlyPaymentText)}
            |  ]
            |}
          """.stripMargin
@@ -374,35 +361,32 @@ class PaymentSummarySpec @Inject()(val config: Config) extends UnitSpec with Wit
       val totalsByDate =
         s"""
            |"totalsByDate": [
-           |  ${total(127.21, date(1, now.plusMonths))},
-           |  ${total(195.49, date(2, now.plusMonths))},
-           |  ${total(195.49, date(3, now.plusMonths))}
+           |  ${total(127.21, now.plusMonths(1))},
+           |  ${total(195.49, now.plusMonths(2))},
+           |  ${total(195.49, now.plusMonths(3))}
            |]
          """.stripMargin
 
       val previousTotalsByDate =
         s"""
            |"previousTotalsByDate": [
-           | ${total(157.00, date(5, now.minusMonths))},
-           | ${total(999.99, date(3, now.minusMonths))},
-           | ${total(1066.67, date(2, now.minusMonths))},
-           | ${total(999.99, date(1, now.minusMonths))}
+           | ${total(157.00, now.minusMonths(5))},
+           | ${total(999.99, now.minusMonths(3))},
+           | ${total(1066.67, now.minusMonths(2))},
+           | ${total(999.99, now.minusMonths(1))}
            |]
          """.stripMargin
 
-      val request = s"""{ $wtc, $ctc, "paymentEnabled": true}""".stripMargin
+      val request          = s"""{ $wtc, $ctc, "paymentEnabled": true}""".stripMargin
       val expectedResponse = Json.stringify(Json.parse(s"""{ $wtc, $ctc, "paymentEnabled": true, $totalsByDate, $previousTotalsByDate }"""))
-      val response = Json.parse(request).validate[PaymentSummary]
-      val paymentSummary = response match {
-        case success: JsSuccess[PaymentSummary] =>
-          success.get
-      }
-      paymentSummary.paymentEnabled.get shouldBe true
-      paymentSummary.childTaxCredit.isDefined shouldBe true
-      paymentSummary.workingTaxCredit.isDefined shouldBe true
-      paymentSummary.totalsByDate.isDefined shouldBe true
+      val response         = Json.parse(request).validate[PaymentSummary]
+      val paymentSummary   = response.asOpt.value
+      paymentSummary.paymentEnabled.get             shouldBe true
+      paymentSummary.childTaxCredit.isDefined       shouldBe true
+      paymentSummary.workingTaxCredit.isDefined     shouldBe true
+      paymentSummary.totalsByDate.isDefined         shouldBe true
       paymentSummary.previousTotalsByDate.isDefined shouldBe true
-      Json.stringify(Json.toJson(paymentSummary)) shouldBe expectedResponse
+      Json.stringify(Json.toJson(paymentSummary))   shouldBe expectedResponse
     }
   }
   "correctly return the informationMessage" in {
@@ -410,9 +394,9 @@ class PaymentSummarySpec @Inject()(val config: Config) extends UnitSpec with Wit
       s"""
          |"workingTaxCredit": {
          |  "paymentSeq": [
-         |    ${payment(50.00, date(1, now.plusMonths), oneOffPayment = false)},
-         |    ${payment(82.00, date(2, now.plusMonths), oneOffPayment = true, None, futureOneOffPaymentText)},
-         |    ${payment(82.00, date(3, now.plusMonths), oneOffPayment = false, bankHoliday, futureEarlyPaymentText)}
+         |    ${payment(50.00, now.plusMonths(1), oneOffPayment = false)},
+         |    ${payment(82.00, now.plusMonths(2), oneOffPayment = true, None, futureOneOffPaymentText)},
+         |    ${payment(82.00, now.plusMonths(3), oneOffPayment = false, bankHoliday, futureEarlyPaymentText)}
          |  ],
          |  "paymentFrequency": "weekly"
          |}
@@ -421,9 +405,9 @@ class PaymentSummarySpec @Inject()(val config: Config) extends UnitSpec with Wit
       s"""
          |"childTaxCredit": {
          |  "paymentSeq": [
-         |    ${payment(25.00, date(1, now.plusMonths), oneOffPayment = false)},
-         |    ${payment(25.00, date(2, now.plusMonths), oneOffPayment = true, None, futureOneOffPaymentText)},
-         |    ${payment(50.00, date(3, now.plusMonths), oneOffPayment = false, bankHoliday, futureEarlyPaymentText)}
+         |    ${payment(25.00, now.plusMonths(1), oneOffPayment = false)},
+         |    ${payment(25.00, now.plusMonths(2), oneOffPayment = true, None, futureOneOffPaymentText)},
+         |    ${payment(50.00, now.plusMonths(3), oneOffPayment = false, bankHoliday, futureEarlyPaymentText)}
          |  ],
          |  "paymentFrequency": "weekly"
          |}
@@ -431,31 +415,28 @@ class PaymentSummarySpec @Inject()(val config: Config) extends UnitSpec with Wit
     val totalsByDate =
       s"""
          |"totalsByDate": [
-         |  ${total(75.00, date(1, now.plusMonths))},
-         |  ${total(107.00, date(2, now.plusMonths))},
-         |  ${total(132.00, date(3, now.plusMonths))}
+         |  ${total(75.00, now.plusMonths(1))},
+         |  ${total(107.00, now.plusMonths(2))},
+         |  ${total(132.00, now.plusMonths(3))}
          |]
          """.stripMargin
 
-    val request = s"""{$wtc, $ctc, "specialCircumstances": "FTNAE", "paymentEnabled": true}""".stripMargin
-    val expectedResponse = Json.stringify(Json.parse(
-      s"""{
+    val request          = s"""{$wtc, $ctc, "specialCircumstances": "FTNAE", "paymentEnabled": true}""".stripMargin
+    val expectedResponse = Json.stringify(Json.parse(s"""{
          |$wtc, $ctc,
          |"paymentEnabled": true,
          |"specialCircumstances":"FTNAE",
          |"informationMessage": "We are currently working out your payments as your child is changing their education or training. This should be done by 7 September ${DateTime.now.year.get}. If your child is staying in education or training, update their details on GOV.UK.",
          |$totalsByDate
          |}""".stripMargin))
-    val response = Json.parse(request).validate[PaymentSummary]
-    val paymentSummary = response match {
-      case success: JsSuccess[PaymentSummary] =>
-        success.get
-    }
-    paymentSummary.paymentEnabled.get shouldBe true
-    paymentSummary.childTaxCredit.isDefined shouldBe true
-    paymentSummary.workingTaxCredit.isDefined shouldBe true
+    val response         = Json.parse(request).validate[PaymentSummary]
+    val paymentSummary   = response.asOpt.value
+
+    paymentSummary.paymentEnabled.get           shouldBe true
+    paymentSummary.childTaxCredit.isDefined     shouldBe true
+    paymentSummary.workingTaxCredit.isDefined   shouldBe true
     paymentSummary.informationMessage.isDefined shouldBe true
-    paymentSummary.totalsByDate.isDefined shouldBe true
+    paymentSummary.totalsByDate.isDefined       shouldBe true
 
     Json.stringify(Json.toJson(paymentSummary)) shouldBe expectedResponse
   }

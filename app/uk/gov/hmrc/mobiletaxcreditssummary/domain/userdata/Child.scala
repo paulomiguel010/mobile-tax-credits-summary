@@ -16,31 +16,32 @@
 
 package uk.gov.hmrc.mobiletaxcreditssummary.domain.userdata
 
-import org.joda.time.{DateTime, LocalDate, Years}
+import java.time.temporal.ChronoUnit
+import java.time.{LocalDate, LocalDateTime, Period}
+
 import play.api.libs.json.{Json, OFormat}
 
-case class Child(firstNames:String,
-                 surname:String,
-                 dateOfBirth:DateTime,
-                 hasFTNAE:Boolean,
-                 hasConnexions: Boolean,
-                 isActive:Boolean,
-                 dateOfDeath:Option[DateTime])
-
+case class Child(
+  firstNames:    String,
+  surname:       String,
+  dateOfBirth:   LocalDate,
+  hasFTNAE:      Boolean,
+  hasConnexions: Boolean,
+  isActive:      Boolean,
+  dateOfDeath:   Option[LocalDate])
 
 object Child {
   implicit val formats: OFormat[Child] = Json.format[Child]
 
-  def getAge(child:Child): Int = {
-    val years = Years.yearsBetween(new LocalDate(child.dateOfBirth), new LocalDate())
-    years.getYears
-  }
+  def getAge(child: Child): Long =
+    Period.between(child.dateOfBirth, LocalDate.now).get(ChronoUnit.YEARS)
 
-  def getEligibleChildren(children: Seq[Child]): Seq[Person] = {
-    children.filter { child =>
-      getAge(child) < 20 &&
+  def getEligibleChildren(children: Seq[Child]): Seq[Person] =
+    children
+      .filter { child =>
+        getAge(child) < 20 &&
         child.isActive &&
         child.dateOfDeath.isEmpty
-    }.map(child => Person(forename = child.firstNames, surname = child.surname))
-  }
+      }
+      .map(child => Person(forename = child.firstNames, surname = child.surname))
 }

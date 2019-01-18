@@ -1,6 +1,7 @@
 .*
 
 !.gitignore
+!.scalafmt.conf
 
 .cache
 /.classpath
@@ -23,7 +24,6 @@ modules
 precompiled
 /.project
 project/project
-project/target
 /RUNNING_PID
 server.pid
 /.settings
