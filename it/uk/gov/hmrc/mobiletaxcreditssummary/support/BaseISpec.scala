@@ -16,35 +16,46 @@
 
 package uk.gov.hmrc.mobiletaxcreditssummary.support
 
-import com.typesafe.config.Config
-import javax.inject.Inject
-import org.scalatest.{Matchers, OptionValues}
+import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
+import org.scalatest.{Matchers, OptionValues, WordSpecLike}
 import org.scalatestplus.play.WsScalaTestClient
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.Application
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.ws.WSClient
+import play.api.test.{DefaultAwaitTimeout, FutureAwaits}
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.play.test.UnitSpec
 
 import scala.language.postfixOps
 
-class BaseISpec @Inject()(config: Config) extends UnitSpec with Matchers with OptionValues with WsScalaTestClient with GuiceOneServerPerSuite with WireMockSupport {
+class BaseISpec
+    extends WordSpecLike
+    with Matchers
+    with ScalaFutures
+    with FutureAwaits
+    with DefaultAwaitTimeout
+    with IntegrationPatience
+    with OptionValues
+    with WsScalaTestClient
+    with GuiceOneServerPerSuite
+    with WireMockSupport {
   override implicit lazy val app: Application = appBuilder.build()
 
-  protected val nino1 = Nino("AA000000A")
-  protected val nino2 = Nino("AP412713B")
+  protected val nino1       = Nino("AA000000A")
+  protected val nino2       = Nino("AP412713B")
   protected val sandboxNino = Nino("CS700100A")
   protected val acceptJsonHeader: (String, String) = "Accept" -> "application/vnd.hmrc.1.0+json"
 
-  def configuration: Map[String, Any] = Map(
-    "auditing.enabled" -> true,
-    "microservice.services.service-locator.enabled" -> false,
-    "microservice.services.auth.port" -> wireMockPort,
-    "microservice.services.datastream.port" -> wireMockPort,
-    "microservice.services.service-locator.port" -> wireMockPort,
-    "microservice.services.tax-credits-broker.port" -> wireMockPort,
-    "auditing.consumer.baseUri.port" -> wireMockPort)
+  def configuration: Map[String, Any] =
+    Map(
+      "auditing.enabled"                              -> true,
+      "microservice.services.service-locator.enabled" -> false,
+      "microservice.services.auth.port"               -> wireMockPort,
+      "microservice.services.datastream.port"         -> wireMockPort,
+      "microservice.services.service-locator.port"    -> wireMockPort,
+      "microservice.services.tax-credits-broker.port" -> wireMockPort,
+      "auditing.consumer.baseUri.port"                -> wireMockPort
+    )
 
   protected def appBuilder: GuiceApplicationBuilder = new GuiceApplicationBuilder().configure(configuration)
 

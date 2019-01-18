@@ -17,6 +17,7 @@
 package uk.gov.hmrc.mobiletaxcreditssummary.controllers
 
 import org.scalamock.scalatest.MockFactory
+import org.scalatest.{Matchers, WordSpecLike}
 import play.api.Configuration
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.AnyContentAsEmpty
@@ -29,37 +30,40 @@ import uk.gov.hmrc.mobiletaxcreditssummary.domain._
 import uk.gov.hmrc.mobiletaxcreditssummary.mocks.{AuditMock, AuthorisationMock, TaxCreditsBrokerConnectorMock}
 import uk.gov.hmrc.mobiletaxcreditssummary.services.LiveTaxCreditsSummaryService
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
-import uk.gov.hmrc.play.test.{UnitSpec, WithFakeApplication}
 
-trait TestSetup extends MockFactory with UnitSpec with WithFakeApplication
-  with TaxCreditsBrokerConnectorMock with AuthorisationMock with AuditMock {
+trait TestSetup extends WordSpecLike with Matchers with MockFactory with TaxCreditsBrokerConnectorMock with AuthorisationMock with AuditMock {
 
-  implicit val hc: HeaderCarrier = HeaderCarrier()
-  implicit val mockAuthConnector: AuthConnector = mock[AuthConnector]
-  implicit val mockTaxCreditsBrokerConnector: TaxCreditsBrokerConnector = mock[TaxCreditsBrokerConnector]
-  implicit val mockAuditConnector: AuditConnector = mock[AuditConnector]
-  implicit val mockService: LiveTaxCreditsSummaryService = mock[LiveTaxCreditsSummaryService]
-  implicit val mockConfiguration: Configuration = fakeApplication.injector.instanceOf[Configuration]
+  implicit val hc:                            HeaderCarrier                = HeaderCarrier()
+  implicit val mockAuthConnector:             AuthConnector                = mock[AuthConnector]
+  implicit val mockTaxCreditsBrokerConnector: TaxCreditsBrokerConnector    = mock[TaxCreditsBrokerConnector]
+  implicit val mockAuditConnector:            AuditConnector               = mock[AuditConnector]
+  implicit val mockService:                   LiveTaxCreditsSummaryService = mock[LiveTaxCreditsSummaryService]
+  implicit val mockConfiguration:             Configuration                = mock[Configuration]
 
   val noNinoFoundOnAccount: JsValue = Json.parse("""{"code":"UNAUTHORIZED","message":"NINO does not exist on account"}""")
-  val lowConfidenceLevelError: JsValue = Json.parse("""{"code":"LOW_CONFIDENCE_LEVEL","message":"Confidence Level on account does not allow access"}""")
+  val lowConfidenceLevelError: JsValue =
+    Json.parse("""{"code":"LOW_CONFIDENCE_LEVEL","message":"Confidence Level on account does not allow access"}""")
 
-  val nino = "CS700100A"
-  val incorrectNino = Nino("SC100700A")
+  val nino             = "CS700100A"
+  val incorrectNino    = Nino("SC100700A")
   val renewalReference = RenewalReference("111111111111111")
   val acceptHeader: (String, String) = "Accept" -> "application/vnd.hmrc.1.0+json"
 
-  lazy val fakeRequest: FakeRequest[AnyContentAsEmpty.type] = FakeRequest().withSession(
-    "AuthToken" -> "Some Header"
-  ).withHeaders(
-    acceptHeader,
-    "Authorization" -> "Some Header"
-  )
-  lazy val requestInvalidHeaders: FakeRequest[AnyContentAsEmpty.type] = FakeRequest().withSession(
-    "AuthToken" -> "Some Header"
-  ).withHeaders(
-    "Authorization" -> "Some Header"
-  )
+  lazy val fakeRequest: FakeRequest[AnyContentAsEmpty.type] = FakeRequest()
+    .withSession(
+      "AuthToken" -> "Some Header"
+    )
+    .withHeaders(
+      acceptHeader,
+      "Authorization" -> "Some Header"
+    )
+  lazy val requestInvalidHeaders: FakeRequest[AnyContentAsEmpty.type] = FakeRequest()
+    .withSession(
+      "AuthToken" -> "Some Header"
+    )
+    .withHeaders(
+      "Authorization" -> "Some Header"
+    )
 
   def emptyRequestWithAcceptHeader(renewalsRef: RenewalReference, nino: Nino): FakeRequest[AnyContentAsEmpty.type] =
     FakeRequest().withHeaders(acceptHeader)

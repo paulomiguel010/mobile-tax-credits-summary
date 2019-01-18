@@ -16,23 +16,22 @@
 
 package uk.gov.hmrc.mobiletaxcreditssummary.controllers
 
-import com.typesafe.config.Config
-import javax.inject.Inject
+import org.scalatest.Matchers
+import play.api.test.{DefaultAwaitTimeout, FutureAwaits}
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.auth.core.ConfidenceLevel.{L100, L200}
 import uk.gov.hmrc.auth.core.syntax.retrieved._
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.mobiletaxcreditssummary.controllers.action.{Authorisation, Authority}
 
-class AuthorisationSpec @Inject()(val config: Config) extends TestSetup {
+class AuthorisationSpec extends TestSetup with FutureAwaits with DefaultAwaitTimeout with Matchers {
 
-  def authorisation(mockAuthConnector: AuthConnector): Authorisation = {
+  def authorisation(mockAuthConnector: AuthConnector): Authorisation =
     new Authorisation {
       override val confLevel: Int = 200
 
       override def authConnector: AuthConnector = mockAuthConnector
     }
-  }
 
   "Authorisation grantAccess" should {
 

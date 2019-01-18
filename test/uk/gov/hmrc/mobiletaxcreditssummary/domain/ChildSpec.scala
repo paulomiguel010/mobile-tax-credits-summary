@@ -16,28 +16,30 @@
 
 package uk.gov.hmrc.mobiletaxcreditssummary.domain
 
-import uk.gov.hmrc.mobiletaxcreditssummary.domain.userdata.Child
-import uk.gov.hmrc.play.test.UnitSpec
-import uk.gov.hmrc.time.DateTimeUtils
+import java.time.LocalDate
 
-class ChildSpec extends UnitSpec {
+import org.scalatest.{Matchers, WordSpecLike}
+import uk.gov.hmrc.mobiletaxcreditssummary.domain.userdata.Child
+
+class ChildSpec extends WordSpecLike with Matchers {
 
   "Child DOB calculation" should {
 
     "using today's date for child DOB will result in age 0" in {
-      val childA = Child("first", "second", DateTimeUtils.now, hasFTNAE = false, hasConnexions = false, isActive = false, None)
+      val childA = Child("first", "second", LocalDate.now, hasFTNAE = false, hasConnexions = false, isActive = false, None)
 
       Child.getAge(childA) shouldBe 0
     }
 
     "using today's date - 16 years for child DOB will result in age 16" in {
-      val childB = Child("first", "second", DateTimeUtils.now.minusYears(16), hasFTNAE = false, hasConnexions = false, isActive = false, None)
+      val childB = Child("first", "second", LocalDate.now.minusYears(16), hasFTNAE = false, hasConnexions = false, isActive = false, None)
 
       Child.getAge(childB) shouldBe 16
     }
 
     "using today's date - 16 years and +1 month for child DOB will result in age 15" in {
-      val childC = Child("first", "second", DateTimeUtils.now.minusYears(16).plusMonths(1), hasFTNAE = false, hasConnexions = false, isActive = false, None)
+      val childC =
+        Child("first", "second", LocalDate.now.minusYears(16).plusMonths(1), hasFTNAE = false, hasConnexions = false, isActive = false, None)
 
       Child.getAge(childC) shouldBe 15
     }

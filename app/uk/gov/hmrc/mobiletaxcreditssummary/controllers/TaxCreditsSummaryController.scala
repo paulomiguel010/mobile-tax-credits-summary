@@ -21,7 +21,6 @@ import play.api._
 import play.api.libs.json.Json.{obj, toJson}
 import play.api.mvc._
 import uk.gov.hmrc.api.controllers._
-import uk.gov.hmrc.api.service.Auditor
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, NotFoundException, ServiceUnavailableException}
@@ -32,17 +31,18 @@ import uk.gov.hmrc.play.HeaderCarrierConverter.fromHeadersAndSession
 import uk.gov.hmrc.play.audit.AuditExtensions.auditHeaderCarrier
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.play.audit.model.ExtendedDataEvent
-import uk.gov.hmrc.play.bootstrap.controller.BaseController
+import uk.gov.hmrc.play.bootstrap.controller.BackendController
+import uk.gov.hmrc.service.Auditor
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 trait ErrorHandling {
   self: BaseController =>
 
   def notFound: Result = Status(ErrorNotFound.httpStatusCode)(toJson(ErrorNotFound))
 
-  def errorWrapper(func: => Future[mvc.Result])(implicit hc: HeaderCarrier): Future[Result] = {
+  def errorWrapper(func: => Future[mvc.Result])(implicit hc: HeaderCarrier): Future[Result] =
     func.recover {
       case _: NotFoundException => notFound
 
@@ -56,40 +56,49 @@ trait ErrorHandling {
         Logger.error(s"Internal server error: ${e.getMessage}", e)
         Status(ErrorInternalServerError.httpStatusCode)(toJson(ErrorInternalServerError))
     }
-  }
 }
 
-trait TaxCreditsSummaryController extends BaseController {
+trait TaxCreditsSummaryController {
   def taxCreditsSummary(nino: Nino, journeyId: Option[String] = None): Action[AnyContent]
 }
 
 @Singleton
-class LiveTaxCreditsSummaryController @Inject()(override val authConnector: AuthConnector,
-                                                @Named("controllers.confidenceLevel") override val confLevel: Int,
-                                                val service: LiveTaxCreditsSummaryService,
-                                                val auditConnector: AuditConnector,
-                                                val appNameConfiguration: Configuration)
-  extends TaxCreditsSummaryController with AccessControl with ErrorHandling with Auditor {
+class LiveTaxCreditsSummaryController @Inject()(
+  override val authConnector:                                   AuthConnector,
+  @Named("controllers.confidenceLevel") override val confLevel: Int,
+  @Named("appName") override val appName:                       String,
+  val service:                                                  LiveTaxCreditsSummaryService,
+  val auditConnector:                                           AuditConnector,
+  val appNameConfiguration:                                     Configuration,
+  cc:                                                           ControllerComponents
+)(
+  implicit override val executionContext: ExecutionContext
+) extends BackendController(cc)
+    with TaxCreditsSummaryController
+    with AccessControl
+    with ErrorHandling
+    with Auditor {
+
+  override def parser: BodyParser[AnyContent] = cc.parsers.anyContent
 
   override final def taxCreditsSummary(nino: Nino, journeyId: Option[String] = None): Action[AnyContent] =
-    validateAcceptWithAuth(acceptHeaderValidationRules, Option(nino)).async {
-      implicit request =>
-        implicit val hc: HeaderCarrier = fromHeadersAndSession(request.headers, None)
+    validateAcceptWithAuth(acceptHeaderValidationRules, Option(nino)).async { implicit request =>
+      implicit val hc: HeaderCarrier = fromHeadersAndSession(request.headers, None)
 
-        errorWrapper {
-          service.getTaxCreditsSummaryResponse(nino).map { summary =>
-            sendAuditEvent(nino, summary, request.path)
-            Ok(toJson(summary))
-          }
+      errorWrapper {
+        val eventualResponse: Future[TaxCreditsSummaryResponse] = service.getTaxCreditsSummaryResponse(nino)
+        eventualResponse.map { summary =>
+          sendAuditEvent(nino, summary, request.path)
+          Ok(toJson(summary))
         }
+      }
     }
 
-  private def sendAuditEvent(nino: Nino, response: TaxCreditsSummaryResponse, path: String)(implicit hc: HeaderCarrier): Unit = {
+  private def sendAuditEvent(nino: Nino, response: TaxCreditsSummaryResponse, path: String)(implicit hc: HeaderCarrier): Unit =
     auditConnector.sendExtendedEvent(
       ExtendedDataEvent(
         appName,
         "TaxCreditsSummaryResponse",
-        tags = hc.toAuditTags("view-tax-credit-summary", path),
+        tags   = hc.toAuditTags("view-tax-credit-summary", path),
         detail = obj("nino" -> nino.value, "summaryData" -> response)))
-  }
 }
