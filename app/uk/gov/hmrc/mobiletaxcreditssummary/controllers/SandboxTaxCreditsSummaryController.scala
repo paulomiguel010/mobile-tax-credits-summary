@@ -45,6 +45,16 @@ class SandboxTaxCreditsSummaryController @Inject()(cc: ControllerComponents)(imp
         case Some("ERROR-401")                 => Unauthorized
         case Some("ERROR-403")                 => Forbidden
         case Some("ERROR-500")                 => InternalServerError
+        case Some("WORKING-TAX-CREDIT-ONLY") =>
+          val resource: String = findResource(s"/resources/taxcreditssummary/working-tax-credit-only.json")
+            .getOrElse(throw new IllegalArgumentException("Resource not found!"))
+          val response = TaxCreditsSummaryResponse(excluded = false, Some(Json.parse(updateDates(resource)).as[TaxCreditsSummary]))
+          Ok(toJson(response))
+        case Some("CHILD-TAX-CREDIT-ONLY") =>
+          val resource: String = findResource(s"/resources/taxcreditssummary/child-tax-credit-only.json")
+            .getOrElse(throw new IllegalArgumentException("Resource not found!"))
+          val response = TaxCreditsSummaryResponse(excluded = false, Some(Json.parse(updateDates(resource)).as[TaxCreditsSummary]))
+          Ok(toJson(response))
         case Some("CLAIMANTS_FAILURE") =>
           val resource: String = findResource(s"/resources/taxcreditssummary/${nino.value}.json")
             .getOrElse(throw new IllegalArgumentException("Resource not found!"))

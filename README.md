@@ -33,6 +33,8 @@ To test different scenarios, add a header "SANDBOX-CONTROL" with one of the foll
 | *Value* | *Description* |
 |--------|----|
 | "TAX-CREDITS-USER" | Happy path, non-excluded Tax Credits User with full summary |
+| "WORKING-TAX-CREDIT-ONLY" | Happy path, non-excluded Tax Credits User with working tax credit data but no child tax credit data |
+| "CHILD-TAX-CREDIT-ONLY" | Happy path, non-excluded Tax Credits User with child tax credit data but no working tax credit data |
 | "NON-TAX-CREDITS-USER" | Happy path, non-excluded, Non Tax Credits User with no summary |
 | "EXCLUDED-TAX-CREDITS-USER" | Happy path, excluded Tax Credits User with no summary |
 | "CLAIMANTS_FAILURE" | Unhappy path, non-excluded Tax Credits User with partial summary missing claimants section | 
