@@ -19,12 +19,12 @@ package uk.gov.hmrc.mobiletaxcreditssummary.domain
 import java.time.LocalDate
 
 import org.scalatest.{Matchers, WordSpecLike}
+import play.api.libs.json.Json
 import uk.gov.hmrc.mobiletaxcreditssummary.domain.userdata.Child
 
 class ChildSpec extends WordSpecLike with Matchers {
 
   "Child DOB calculation" should {
-
     "using today's date for child DOB will result in age 0" in {
       val childA = Child("first", "second", LocalDate.now, hasFTNAE = false, hasConnexions = false, isActive = false, None)
 
@@ -43,6 +43,13 @@ class ChildSpec extends WordSpecLike with Matchers {
 
       Child.getAge(childC) shouldBe 15
     }
+  }
 
+  "Converting Child to json" should {
+    "render the birth date as a Long" in {
+      val expected = Json.parse("""{"firstNames":"","surname":"","dateOfBirth":1546300800000,"hasFTNAE":false,"hasConnexions":false,"isActive":false}""")
+      val child    = Child("", "", LocalDate.parse("2019-01-01"), hasFTNAE = false, hasConnexions = false, isActive = false, None)
+      jsonDiff(None, Json.toJson(child), expected) shouldBe 'empty
+    }
   }
 }

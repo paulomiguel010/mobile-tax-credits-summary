@@ -17,7 +17,7 @@
 package uk.gov.hmrc.mobiletaxcreditssummary.domain.userdata
 
 import java.time.temporal.ChronoUnit
-import java.time.{LocalDate, LocalDateTime, Period}
+import java.time.{LocalDate, Period}
 
 import play.api.libs.json.{Json, OFormat}
 
