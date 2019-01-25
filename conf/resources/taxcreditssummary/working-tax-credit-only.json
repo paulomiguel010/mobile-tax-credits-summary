@@ -1,0 +1,157 @@
+{
+  "paymentSummary": {
+    "workingTaxCredit": {
+      "paymentSeq": [
+        {
+          "amount": 80.29,
+          "paymentDate": date1,
+          "oneOffPayment": false,
+          "earlyPayment": false
+        },
+        {
+          "amount": 80.29,
+          "paymentDate": date2,
+          "oneOffPayment": false,
+          "holidayType": "bankHoliday",
+          "earlyPayment": true,
+          "explanatoryText": "Your payment is early because of UK bank holidays."
+        },
+        {
+          "amount": 80.29,
+          "paymentDate": date3,
+          "oneOffPayment": true,
+          "earlyPayment": false,
+          "explanatoryText": "This is because of a recent change and is to help you get the right amount of tax credits."
+        },
+        {
+          "amount": 80.29,
+          "paymentDate": date4,
+          "oneOffPayment": false,
+          "earlyPayment": false
+        },
+        {
+          "amount": 80.29,
+          "paymentDate": date5,
+          "oneOffPayment": false,
+          "earlyPayment": false
+        },
+        {
+          "amount": 80.29,
+          "paymentDate": date6,
+          "oneOffPayment": false,
+          "earlyPayment": false
+        },
+        {
+          "amount": 80.29,
+          "paymentDate": date7,
+          "oneOffPayment": false,
+          "earlyPayment": false
+        },
+        {
+          "amount": 80.29,
+          "paymentDate": date8,
+          "oneOffPayment": false,
+          "earlyPayment": false
+        }
+      ],
+      "paymentFrequency": "weekly",
+      "previousPaymentSeq": [
+        {
+          "amount": 100,
+          "paymentDate": previousDate1,
+          "oneOffPayment": false,
+          "earlyPayment": false
+        },
+        {
+          "amount": 100,
+          "paymentDate": previousDate2,
+          "oneOffPayment": false,
+          "holidayType": "bankHoliday",
+          "earlyPayment": true,
+          "explanatoryText": "Your payment was early because of UK bank holidays."
+        },
+        {
+          "amount": 170.31,
+          "paymentDate": previousDate3,
+          "oneOffPayment": true,
+          "earlyPayment": false,
+          "explanatoryText": "This was because of a recent change and was to help you get the right amount of tax credits."
+        }
+      ]
+    },
+    "paymentEnabled": true,
+    "totalsByDate": [
+      {
+        "amount": 252.13,
+        "paymentDate": date1
+      },
+      {
+        "amount": 252.13,
+        "paymentDate": date2
+      },
+      {
+        "amount": 252.13,
+        "paymentDate": date3
+      },
+      {
+        "amount": 252.13,
+        "paymentDate": date4
+      },
+      {
+        "amount": 252.13,
+        "paymentDate": date5
+      },
+      {
+        "amount": 252.13,
+        "paymentDate": date6
+      },
+      {
+        "amount": 252.13,
+        "paymentDate": date7
+      },
+      {
+        "amount": 252.13,
+        "paymentDate": date8
+      }
+    ],
+    "previousTotalsByDate": [
+      {
+        "amount": 240.70,
+        "paymentDate": previousDate1
+      },
+      {
+        "amount": 240.70,
+        "paymentDate": previousDate2
+      },
+      {
+        "amount": 270.31,
+        "paymentDate": previousDate3
+      }
+    ]
+  },
+  "claimants": {
+    "personalDetails": {
+      "forename": "Nuala",
+      "surname": "O'Shea"
+    },
+    "partnerDetails": {
+      "forename": "Frederick",
+      "otherForenames": "Tarquin",
+      "surname": "Hunter-Smith"
+    },
+    "children": [
+      {
+        "forename": "Sarah",
+        "surname": "Smith"
+      },
+      {
+        "forename": "Joseph",
+        "surname": "Smith"
+      },
+      {
+        "forename": "Mary",
+        "surname": "Smith"
+      }
+    ]
+  }
+}

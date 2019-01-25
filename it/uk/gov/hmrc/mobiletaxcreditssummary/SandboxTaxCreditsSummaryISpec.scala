@@ -41,6 +41,24 @@ class SandboxTaxCreditsSummaryISpec extends BaseISpec with FileResource {
       (response.json \ "taxCreditsSummary" \ "claimants" \ "personalDetails" \ "forename").as[String]               shouldBe "Nuala"
     }
 
+    "return excluded = false and a tax credit summary with only working tax credit data where SANDBOX-CONTROL is WORKING-TAX-CREDIT-ONLY" in {
+      val response = await(request(sandboxNino).addHttpHeaders(mobileHeader, "SANDBOX-CONTROL" -> "WORKING-TAX-CREDIT-ONLY").get())
+      response.status                                                                                               shouldBe 200
+      (response.json \ "excluded").as[Boolean]                                                                      shouldBe false
+      (response.json \ "taxCreditsSummary" \ "paymentSummary" \ "workingTaxCredit" \ "paymentFrequency").as[String] shouldBe "weekly"
+      (response.json \\ "childTaxCredit")                                                                           shouldBe empty
+      (response.json \ "taxCreditsSummary" \ "claimants" \ "personalDetails" \ "forename").as[String]               shouldBe "Nuala"
+    }
+
+    "return excluded = false and a tax credit summary with only working tax credit data where SANDBOX-CONTROL is CHILD-TAX-CREDIT-ONLY" in {
+      val response = await(request(sandboxNino).addHttpHeaders(mobileHeader, "SANDBOX-CONTROL" -> "CHILD-TAX-CREDIT-ONLY").get())
+      response.status                                                                                             shouldBe 200
+      (response.json \ "excluded").as[Boolean]                                                                    shouldBe false
+      (response.json \ "taxCreditsSummary" \ "paymentSummary" \ "childTaxCredit" \ "paymentFrequency").as[String] shouldBe "weekly"
+      (response.json \\ "workingTaxCredit")                                                                       shouldBe empty
+      (response.json \ "taxCreditsSummary" \ "claimants" \ "personalDetails" \ "forename").as[String]             shouldBe "Nuala"
+    }
+
     "return excluded = false and a tax credit summary where SANDBOX-CONTROL is any other value" in {
       val response = await(request(sandboxNino).addHttpHeaders(mobileHeader, "SANDBOX-CONTROL" -> "RANDOMVALUE").get())
       response.status                                                                                               shouldBe 200
