@@ -20,11 +20,9 @@ import com.google.inject.AbstractModule
 import com.google.inject.name.Names.named
 import com.typesafe.config.Config
 import play.api.{Configuration, Environment}
-import uk.gov.hmrc.api.connector.{ApiServiceLocatorConnector, ServiceLocatorConnector}
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http.{CoreGet, CorePost}
 import uk.gov.hmrc.mobiletaxcreditssummary.controllers.api.ApiAccess
-import uk.gov.hmrc.mobiletaxcreditssummary.tasks.ServiceLocatorRegistrationTask
 import uk.gov.hmrc.play.bootstrap.auth.DefaultAuthConnector
 import uk.gov.hmrc.play.bootstrap.config.{RunMode, ServicesConfig}
 import uk.gov.hmrc.play.bootstrap.http.HttpClient
@@ -36,12 +34,10 @@ class GuiceModule(environment: Environment, configuration: Configuration) extend
   val servicesConfig = new ServicesConfig(configuration, new RunMode(configuration, environment.mode))
 
   override def configure(): Unit = {
-    bind(classOf[ServiceLocatorConnector]).to(classOf[ApiServiceLocatorConnector])
     bind(classOf[AuthConnector]).to(classOf[DefaultAuthConnector])
     bind(classOf[CoreGet]).to(classOf[WSHttpImpl])
     bind(classOf[CorePost]).to(classOf[WSHttpImpl])
     bind(classOf[HttpClient]).to(classOf[WSHttpImpl])
-    bind(classOf[ServiceLocatorRegistrationTask]).asEagerSingleton()
 
     bindConfigInt("controllers.confidenceLevel")
     bindConfigString("appUrl", "appUrl")
